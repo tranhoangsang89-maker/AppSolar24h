@@ -823,7 +823,7 @@ with f_col1:
         max_value=int(max_loan_allowed),
         value=int(max_loan_allowed),
         step=5000000,
-        format="%d"
+        format="%,d"
     )
     
     prepayment = pkg_price - loan_amount
