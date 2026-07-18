@@ -687,10 +687,10 @@ with calc_col1:
         )
         
         if input_type == "Hóa đơn tiền điện (VNĐ/Tháng)":
-            user_bill = st.number_input(
+            user_bill = st.slider(
                 "Nhập số tiền điện bình quân mỗi tháng (gồm VAT):",
-                min_value=100000, max_value=50000000, value=2500000, step=100000,
-                format="%d"
+                min_value=500000, max_value=30000000, value=2500000, step=100000,
+                format="%,d"
             )
             estimated_kwh = back_calculate_kwh_from_cost(user_bill)
         else:
@@ -764,7 +764,7 @@ with calc_col2:
             </div>
             <div>⚡ <b>Khả năng vận hành:</b><br>
                 • Sản lượng: <b>{daily_generation:.1f} kWh / ngày</b> (trung bình)<br>
-                • Cắt giảm hóa đơn lên tới: <b>{min(100.0, (monthly_savings/user_bill)*100):.1f}%</b>
+                • Cắt giảm hóa đơn điện lên tới: <b>{min(90.0, (monthly_savings/user_bill)*100):.1f}%</b>
             </div>
         </div>
     </div>
