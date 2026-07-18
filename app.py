@@ -437,7 +437,7 @@ def calculate_shinhan_installment(loan_amount, term_months):
 # ==============================================================================
 # 3. HEADER (LOGO & BRANDING)
 # ==============================================================================
-col_logo, col_title = st.columns([1, 4])
+col_logo, col_title, col_banner = st.columns([1, 2.5, 2.5])
 
 with col_logo:
     logo_path = "Logo Solar 24h.png"
@@ -454,11 +454,21 @@ with col_title:
     st.markdown("""
         <div style='padding-top: 15px;'>
             <h1 style='color: #0A2540; margin: 0; font-size: 2.5rem; font-weight: 800;'>SOLAR 24H</h1>
-            <p style='color: #2ECC71; font-size: 1.2rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 1px;'>
+            <p style='color: #2ECC71; font-size: 1.25rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 1px;'>
                 Giải Pháp Điện Năng Lượng Mặt Trời Trọn Gói
             </p>
         </div>
     """, unsafe_allow_html=True)
+
+with col_banner:
+    banner_path = "solar_panels_banner.png"
+    if os.path.exists(banner_path):
+        try:
+            banner_img = Image.open(banner_path)
+            # Dùng st.image hiển thị ảnh và bo tròn nhẹ các góc qua CSS
+            st.image(banner_img, use_container_width=True)
+        except Exception:
+            pass
 
 st.write("---")
 
