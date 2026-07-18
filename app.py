@@ -738,7 +738,7 @@ daily_generation = rec_pkg["kwp"] * sun_hours * sys_efficiency
 # Calculate post-solar cost (using progressive EVN scale)
 remaining_kwh = max(0.0, estimated_kwh - monthly_generation)
 post_solar_bill = calculate_monthly_electricity_cost(remaining_kwh)
-monthly_savings = user_bill - post_solar_bill
+monthly_savings = min(0.9 * user_bill, user_bill - post_solar_bill)
 
 # Payback period
 payback_years = rec_pkg["price"] / (monthly_savings * 12) if monthly_savings > 0 else 0.0
