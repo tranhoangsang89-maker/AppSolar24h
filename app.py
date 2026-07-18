@@ -475,17 +475,29 @@ st.write("---")
 # ==============================================================================
 # 4. HERO SECTION
 # ==============================================================================
-st.markdown("""
-<div class='hero-container'>
-    <h2 style='color: #0A2540; margin-top: 0; font-weight: 700; font-size: 1.8rem;'>🌿 Kiến Tạo Tương Lai Xanh - Tiết Kiệm Tối Đa Chi Phí</h2>
-    <p style='color: #1E5631; font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;'>
-        Chào mừng quý khách đến với <b>Solar 24h</b>. Chúng tôi là đơn vị chuyên nghiệp hàng đầu tại miền Tây và toàn quốc, 
-        cung cấp các giải pháp điện mặt trời trọn gói chất lượng cao. Với việc ứng dụng tấm pin công nghệ Đức <b>AE Solar</b>, 
-        kết hợp pin lưu trữ lithium bền bỉ, chúng tôi giúp các hộ gia đình và doanh nghiệp cắt giảm trực tiếp bậc thang giá điện 
-        và tự chủ nguồn năng lượng xanh thân thiện với môi trường.
-    </p>
-</div>
-""", unsafe_allow_html=True)
+hero_col1, hero_col2 = st.columns([1.3, 1.0])
+
+with hero_col1:
+    st.markdown("""
+    <div class='hero-container' style='height: 100%; display: flex; flex-direction: column; justify-content: center; margin-bottom: 0;'>
+        <h2 style='color: #0A2540; margin-top: 0; font-weight: 700; font-size: 1.8rem;'>🌿 Kiến Tạo Tương Lai Xanh - Tiết Kiệm Tối Đa Chi Phí</h2>
+        <p style='color: #1E5631; font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;'>
+            Chào mừng quý khách đến với <b>Solar 24h</b>. Chúng tôi là đơn vị chuyên nghiệp hàng đầu tại miền Tây và toàn quốc, 
+            cung cấp các giải pháp điện mặt trời trọn gói chất lượng cao. Với việc ứng dụng tấm pin công nghệ Đức <b>AE Solar</b>, 
+            kết hợp pin lưu trữ lithium bền bỉ, chúng tôi giúp các hộ gia đình và doanh nghiệp cắt giảm trực tiếp bậc thang giá điện 
+            và tự chủ nguồn năng lượng xanh thân thiện với môi trường.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with hero_col2:
+    team_path = "solar24h_team.jpg"
+    if os.path.exists(team_path):
+        try:
+            team_img = Image.open(team_path)
+            st.image(team_img, use_container_width=True, caption="Đội ngũ kỹ sư chuyên nghiệp & Showroom thiết bị Solar 24h")
+        except Exception:
+            pass
 
 # 3 Pillars
 h_col1, h_col2, h_col3 = st.columns(3)
