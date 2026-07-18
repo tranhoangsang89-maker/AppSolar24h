@@ -461,11 +461,11 @@ with col_title:
     """, unsafe_allow_html=True)
 
 with col_banner:
-    banner_path = "solar_panels_banner.png"
+    banner_path = "Bảng Hiệu Solar 24h.png"
     if os.path.exists(banner_path):
         try:
             banner_img = Image.open(banner_path)
-            # Dùng st.image hiển thị ảnh và bo tròn nhẹ các góc qua CSS
+            # Dùng st.image hiển thị ảnh bảng hiệu chính thức của công ty
             st.image(banner_img, use_container_width=True)
         except Exception:
             pass
