@@ -73,13 +73,14 @@ def save_contact(phone, prompt):
             print("Lỗi bắn webhook:", e)
 
 def download_font():
-    font_path = "Roboto-Regular.ttf"
+    font_path = "Roboto-Regular-New.ttf"
     if not os.path.exists(font_path):
-        url = "https://github.com/google/fonts/raw/main/ofl/roboto/Roboto-Regular.ttf"
+        url = "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf"
         try:
-            r = requests.get(url, allow_redirects=True)
-            with open(font_path, "wb") as f:
-                f.write(r.content)
+            r = requests.get(url, allow_redirects=True, timeout=10)
+            if r.status_code == 200:
+                with open(font_path, "wb") as f:
+                    f.write(r.content)
         except Exception as e:
             print("Lỗi tải font Roboto:", e)
 
@@ -88,8 +89,8 @@ def generate_pdf_quote(customer_name, phone, package, size, price):
     pdf.add_page()
     
     download_font()
-    if os.path.exists("Roboto-Regular.ttf"):
-        pdf.add_font("Roboto", "", "Roboto-Regular.ttf", uni=True)
+    if os.path.exists("Roboto-Regular-New.ttf"):
+        pdf.add_font("Roboto", "", "Roboto-Regular-New.ttf", uni=True)
         pdf.set_font("Roboto", "", 12)
     else:
         pdf.set_font("Arial", "", 12)
