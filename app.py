@@ -790,8 +790,8 @@ with st.sidebar:
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
                 try:
-                    # Thiết lập model (Đổi sang gemini-2.5-flash để tiết kiệm quota free tier)
-                    model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_context)
+                    # Thiết lập model (Đổi sang gemini-flash-lite-latest để hỗ trợ user mới & quota cao)
+                    model = genai.GenerativeModel('gemini-flash-lite-latest', system_instruction=system_context)
                     
                     # Chuyển đổi lịch sử chat sang định dạng của genai
                     chat_history = []
