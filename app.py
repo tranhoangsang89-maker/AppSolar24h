@@ -199,7 +199,7 @@ def generate_pdf_quote(customer_name, phone, package, size, price):
         
     # Footer Disclaimers
     pdf.ln(15)
-    pdf.set_font(font_family, "I", 10)
+    pdf.set_font(font_family, "", 10)
     pdf.set_text_color(100, 100, 100)
     pdf.multi_cell(0, 6, "(*) Ghi chú: Bảng báo giá trên được tổng hợp tự động bởi Trợ lý AI và mang tính chất ước tính sơ bộ. Chi phí thực tế có thể thay đổi một chút tùy thuộc vào kết cấu mái nhà, vật tư cáp điện phát sinh khi khảo sát thực tế và các chương trình ưu đãi hiện hành của công ty.")
     
