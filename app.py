@@ -4,6 +4,9 @@ import pandas as pd
 from PIL import Image
 import math
 import requests
+import google.generativeai as genai
+import re
+from datetime import datetime
 
 # Tự động nạp cấu hình từ tệp .env (nếu có)
 def load_env():
@@ -16,6 +19,56 @@ def load_env():
                     os.environ[key.strip()] = val.strip()
 
 load_env()
+
+def setup_ai():
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if api_key and api_key != "your_api_key_here":
+        genai.configure(api_key=api_key)
+        return True
+    return False
+
+ai_ready = setup_ai()
+
+def load_ai_knowledge_base():
+    kb_path = "solar_24h_ai_knowledge_base.md"
+    if os.path.exists(kb_path):
+        with open(kb_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "Bạn là trợ lý AI chuyên tư vấn điện mặt trời của Solar 24h."
+
+ai_knowledge_base = load_ai_knowledge_base()
+
+def save_contact(phone, prompt):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    clean_prompt = prompt.replace(',', ';').replace('\n', ' ')
+    row = f"{now},Khách từ AI,{phone},N/A,N/A,{clean_prompt}\n"
+    
+    # 1. Ghi vào file contacts.csv
+    try:
+        if not os.path.exists("contacts.csv"):
+            with open("contacts.csv", "w", encoding="utf-8") as f:
+                f.write("ThoiGian,HoTen,SoDienThoai,DienTichMai,GoiQuanTam,GhiChu\n")
+        with open("contacts.csv", "a", encoding="utf-8") as f:
+            f.write(row)
+    except Exception as e:
+        print("Lỗi ghi file CSV:", e)
+        
+    # 2. Bắn Webhook nếu có
+    webhook_url = os.environ.get("GOOGLE_SHEET_WEBHOOK_URL", "")
+    if webhook_url:
+        payload = {
+            "ThoiGian": now,
+            "HoTen": "Khách từ AI",
+            "SoDienThoai": phone,
+            "DienTichMai": "N/A",
+            "GoiQuanTam": "N/A",
+            "GhiChu": clean_prompt
+        }
+        try:
+            # Gửi không chờ response quá lâu để tránh lag UI
+            requests.post(webhook_url, json=payload, timeout=3)
+        except Exception as e:
+            print("Lỗi bắn webhook:", e)
 
 # ==============================================================================
 # 1. PAGE CONFIGURATION & CUSTOM STYLING
@@ -688,6 +741,73 @@ with tab3:
             load_and_show_image("Thiết Bị Điện Mặt Trời/Pin Gigabox.png", caption="Pin lưu trữ Gigabox Lithium")
             
         load_and_show_image("Công trình thực tế/Sà lang - ghe - tàu.png", caption="Hệ thống Hybrid độc lập lắp trên sà lang sông nước")
+
+# ==============================================================================
+# SIDEBAR: TRỢ LÝ AI TƯ VẤN (SOLAR GIRL)
+# ==============================================================================
+with st.sidebar:
+    # Hiển thị linh vật Solar Girl
+    solar_girl_path = "SolarGirl.png"
+    if os.path.exists(solar_girl_path):
+        st.image(solar_girl_path, use_container_width=True)
+        
+    st.markdown("### 🤖 Trợ lý Solar Girl")
+    st.markdown("Hỏi tôi bất cứ điều gì về các gói điện mặt trời, chính sách trả góp, hoặc kỹ thuật hệ thống.")
+    st.markdown("---")
+    
+    if not ai_ready:
+        st.warning("⚠️ Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm API key vào file `.env` hoặc `secrets.toml` để sử dụng tính năng này.")
+    else:
+        # Khởi tạo session state cho lịch sử chat
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+            # Thêm lời chào ban đầu
+            st.session_state.messages.append({"role": "assistant", "content": "Xin chào! Mình là Solar Girl - Trợ lý AI của Solar 24h. Mình có thể giúp gì cho gia đình/doanh nghiệp bạn hôm nay?"})
+
+        # Xây dựng context tĩnh về hệ thống để gửi kèm cho AI
+        system_context = f"{ai_knowledge_base}\n\n[Dữ liệu cấu hình kỹ thuật nội bộ tham khảo thêm: {SOLAR_PACKAGES}]"
+
+        # Hiển thị lịch sử chat
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        # Input từ người dùng
+        if prompt := st.chat_input("Hỏi Solar Girl (VD: Gói F2 giá bao nhiêu?)"):
+            # Nhận diện số điện thoại (bắt đầu bằng 0, độ dài 10 số)
+            phone_match = re.search(r'\b0\d{9}\b', prompt)
+            if phone_match:
+                phone_num = phone_match.group()
+                save_contact(phone_num, prompt)
+                st.toast(f"Hệ thống đã tự động lưu số điện thoại: {phone_num}", icon="✅")
+
+            # Thêm tin nhắn của người dùng vào giao diện và session state
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            # Gọi Gemini API
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                try:
+                    # Thiết lập model (đã cập nhật lên phiên bản mới nhất gemini-flash-latest)
+                    model = genai.GenerativeModel('gemini-flash-latest', system_instruction=system_context)
+                    
+                    # Chuyển đổi lịch sử chat sang định dạng của genai
+                    chat_history = []
+                    for m in st.session_state.messages[:-1]: # Loại bỏ câu user cuối cùng vì sẽ dùng làm prompt
+                        role = "user" if m["role"] == "user" else "model"
+                        # Bỏ qua tin nhắn đầu tiên (lời chào) nếu API không nhận diện tốt
+                        chat_history.append({"role": role, "parts": [m["content"]]})
+                        
+                    chat = model.start_chat(history=chat_history)
+                    response = chat.send_message(prompt)
+                    
+                    full_response = response.text
+                    message_placeholder.markdown(full_response)
+                    st.session_state.messages.append({"role": "assistant", "content": full_response})
+                except Exception as e:
+                    st.error(f"Đã xảy ra lỗi khi gọi AI: {str(e)}")
 
 st.write("---")
 
