@@ -833,7 +833,7 @@ with st.sidebar:
 Nếu thông tin nào không có hoặc chưa được nhắc đến, hãy điền giá trị là 'Chưa cung cấp'.
 Hội thoại:\n{chat_text}"""
                     try:
-                        ext_model = genai.GenerativeModel('gemini-1.5-flash', generation_config=genai.GenerationConfig(response_mime_type="application/json"))
+                        ext_model = genai.GenerativeModel('gemini-flash-lite-latest', generation_config=genai.GenerationConfig(response_mime_type="application/json"))
                         ext_res = ext_model.generate_content(extract_prompt)
                         data = json.loads(ext_res.text)
                         
