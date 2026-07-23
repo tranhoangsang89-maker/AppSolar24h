@@ -121,7 +121,7 @@ def generate_pdf_quote(customer_name, phone, package, size, price):
     pdf.cell(0, 10, "Vui lòng liên hệ Hotline hoặc Kỹ thuật viên để khảo sát thực tế và báo giá chính xác nhất.", ln=True)
     
     # Return bytes (fpdf2 output() returns bytearray)
-    return pdf.output()
+    return bytes(pdf.output())
 
 # ==============================================================================
 # 1. PAGE CONFIGURATION & CUSTOM STYLING
