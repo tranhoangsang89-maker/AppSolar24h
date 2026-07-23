@@ -72,55 +72,146 @@ def save_contact(phone, prompt):
         except Exception as e:
             print("Lỗi bắn webhook:", e)
 
-def download_font():
-    font_path = "Roboto-Regular-New.ttf"
-    if not os.path.exists(font_path):
-        url = "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf"
-        try:
-            r = requests.get(url, allow_redirects=True, timeout=10)
-            if r.status_code == 200:
-                with open(font_path, "wb") as f:
-                    f.write(r.content)
-        except Exception as e:
-            print("Lỗi tải font Roboto:", e)
+def download_fonts():
+    font_reg = "Roboto-Regular-New.ttf"
+    font_bold = "Roboto-Bold-New.ttf"
+    urls = {
+        font_reg: "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf",
+        font_bold: "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Bold.ttf"
+    }
+    for path, url in urls.items():
+        if not os.path.exists(path):
+            try:
+                r = requests.get(url, allow_redirects=True, timeout=10)
+                if r.status_code == 200:
+                    with open(path, "wb") as f:
+                        f.write(r.content)
+            except Exception as e:
+                print(f"Lỗi tải font {path}:", e)
 
 def generate_pdf_quote(customer_name, phone, package, size, price):
     pdf = FPDF()
     pdf.add_page()
     
-    download_font()
-    if os.path.exists("Roboto-Regular-New.ttf"):
+    download_fonts()
+    has_font = False
+    if os.path.exists("Roboto-Regular-New.ttf") and os.path.exists("Roboto-Bold-New.ttf"):
         pdf.add_font("Roboto", "", "Roboto-Regular-New.ttf", uni=True)
-        pdf.set_font("Roboto", "", 12)
+        pdf.add_font("Roboto", "B", "Roboto-Bold-New.ttf", uni=True)
+        has_font = True
+        
+    font_family = "Roboto" if has_font else "Arial"
+    
+    # Header styling (Navy Blue)
+    pdf.set_fill_color(10, 37, 64)
+    pdf.rect(0, 0, 210, 35, 'F')
+    
+    if os.path.exists("Logo Solar 24h.png"):
+        pdf.image("Logo Solar 24h.png", x=10, y=5, w=35)
+        
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font(font_family, "B", 18)
+    pdf.set_xy(50, 10)
+    pdf.cell(150, 10, "CÔNG TY TNHH TMDV SOLAR 24H", ln=True, align="R")
+    pdf.set_font(font_family, "", 11)
+    pdf.set_xy(50, 20)
+    pdf.cell(150, 10, "Giải Pháp Điện Năng Lượng Mặt Trời Trọn Gói", ln=True, align="R")
+    
+    # Title
+    pdf.ln(15)
+    pdf.set_text_color(46, 204, 113) # Leaf Green
+    pdf.set_font(font_family, "B", 20)
+    pdf.cell(0, 12, "BẢNG BÁO GIÁ ĐIỆN MẶT TRỜI", ln=True, align="C")
+    
+    # Date & Ref
+    pdf.set_text_color(100, 100, 100)
+    pdf.set_font(font_family, "", 10)
+    pdf.cell(0, 6, f"Ngày báo giá: {datetime.now().strftime('%d/%m/%Y')} | Ref: AI-{datetime.now().strftime('%H%M')}", ln=True, align="C")
+    
+    # Customer Info Box
+    pdf.ln(10)
+    pdf.set_fill_color(248, 249, 250)
+    pdf.set_draw_color(226, 232, 240)
+    pdf.rect(10, pdf.get_y(), 190, 25, 'FD')
+    
+    pdf.set_xy(15, pdf.get_y() + 5)
+    pdf.set_text_color(10, 37, 64)
+    pdf.set_font(font_family, "B", 11)
+    pdf.cell(40, 7, "Khách hàng:")
+    pdf.set_font(font_family, "", 11)
+    pdf.cell(100, 7, f"{customer_name}")
+    pdf.ln(7)
+    
+    pdf.set_x(15)
+    pdf.set_font(font_family, "B", 11)
+    pdf.cell(40, 7, "Số điện thoại:")
+    pdf.set_font(font_family, "", 11)
+    pdf.cell(100, 7, f"{phone}")
+    pdf.ln(15)
+    
+    # Main Table
+    pdf.set_fill_color(46, 204, 113) # Green header
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font(font_family, "B", 11)
+    
+    pdf.cell(70, 10, "GÓI SẢN PHẨM", border=1, fill=True, align="C")
+    pdf.cell(50, 10, "CÔNG SUẤT", border=1, fill=True, align="C")
+    pdf.cell(70, 10, "TỔNG TIỀN (VNĐ)", border=1, fill=True, align="C")
+    pdf.ln(10)
+    
+    pdf.set_text_color(10, 37, 64)
+    pdf.set_font(font_family, "B", 12)
+    pdf.cell(70, 12, str(package).upper(), border=1, align="C")
+    pdf.cell(50, 12, str(size), border=1, align="C")
+    pdf.set_text_color(229, 62, 62) # Red for price
+    pdf.cell(70, 12, str(price), border=1, align="C")
+    pdf.ln(15)
+    
+    # Detailed Specs
+    pdf.set_text_color(10, 37, 64)
+    # Tìm kiếm package trong SOLAR_PACKAGES kể cả khi AI trả về chữ thường hoặc có khoảng trắng dư
+    pkg_key = next((k for k in SOLAR_PACKAGES.keys() if k.lower().replace(" ", "") == str(package).lower().replace(" ", "")), None)
+    
+    if pkg_key:
+        pkg_data = SOLAR_PACKAGES[pkg_key]
+        pdf.set_font(font_family, "B", 13)
+        pdf.cell(0, 10, "THÔNG SỐ KỸ THUẬT & VẬT TƯ:", ln=True)
+        
+        pdf.set_font(font_family, "", 11)
+        pdf.ln(2)
+        pdf.cell(0, 7, f"- Khả năng phát điện trung bình: {pkg_data['gen_min']} - {pkg_data['gen_max']} kWh/ngày.", ln=True)
+        pdf.cell(0, 7, f"- Số lượng tấm pin: {pkg_data['panels']} Tấm pin AE Solar (Đức) 580W.", ln=True)
+        pdf.cell(0, 7, f"- Biến tần Inverter: {pkg_data['inverter']}.", ln=True)
+        pdf.cell(0, 7, f"- Pin lưu trữ Lithium: {pkg_data['battery']}.", ln=True)
+        
+        pdf.ln(5)
+        pdf.set_font(font_family, "B", 12)
+        pdf.cell(0, 8, "Trọn gói hệ thống bao gồm:", ln=True)
+        pdf.set_font(font_family, "", 11)
+        for item in pkg_data['checklist']:
+            pdf.set_x(15)
+            pdf.cell(0, 6, f"+ {item}", ln=True)
     else:
-        pdf.set_font("Arial", "", 12)
+        pdf.set_font(font_family, "B", 12)
+        pdf.cell(0, 10, "THÔNG TIN CHI TIẾT:", ln=True)
+        pdf.set_font(font_family, "", 11)
+        pdf.multi_cell(0, 7, f"Hệ thống đã được thiết kế sơ bộ theo tư vấn của AI. Vui lòng liên hệ để khảo sát thực tế và lên phương án chi tiết nhất.")
         
-    if os.path.exists("Bảng Hiệu Solar 24h.png"):
-        pdf.image("Bảng Hiệu Solar 24h.png", x=10, y=8, w=40)
-        
-    pdf.cell(0, 10, "CÔNG TY TNHH TMDV SOLAR 24H", ln=True, align="C")
-    pdf.cell(0, 10, "BẢNG BÁO GIÁ ĐIỆN MẶT TRỜI", ln=True, align="C")
+    # Footer Disclaimers
     pdf.ln(15)
+    pdf.set_font(font_family, "I", 10)
+    pdf.set_text_color(100, 100, 100)
+    pdf.multi_cell(0, 6, "(*) Ghi chú: Bảng báo giá trên được tổng hợp tự động bởi Trợ lý AI và mang tính chất ước tính sơ bộ. Chi phí thực tế có thể thay đổi một chút tùy thuộc vào kết cấu mái nhà, vật tư cáp điện phát sinh khi khảo sát thực tế và các chương trình ưu đãi hiện hành của công ty.")
     
-    pdf.cell(0, 10, f"Khách hàng: {customer_name}", ln=True)
-    pdf.cell(0, 10, f"Số điện thoại: {phone}", ln=True)
-    pdf.ln(5)
+    pdf.ln(8)
+    pdf.set_font(font_family, "B", 11)
+    pdf.set_text_color(46, 204, 113)
+    pdf.cell(0, 6, "LIÊN HỆ KHẢO SÁT THỰC TẾ & KÝ HỢP ĐỒNG:", ln=True)
+    pdf.set_text_color(10, 37, 64)
+    pdf.set_font(font_family, "", 11)
+    pdf.cell(0, 6, "Hotline/Zalo: 0909.363.579 - 0896.488.299", ln=True)
+    pdf.cell(0, 6, "Địa chỉ: Khu Phố Long Hòa A, Phường Đạo Thạnh, Tỉnh Đồng Tháp", ln=True)
     
-    # Bảng
-    pdf.cell(60, 10, "Gói Lắp Đặt", border=1)
-    pdf.cell(60, 10, "Công Suất", border=1)
-    pdf.cell(70, 10, "Tổng Tiền (Ước tính)", border=1, ln=True)
-    
-    pdf.cell(60, 10, str(package), border=1)
-    pdf.cell(60, 10, str(size), border=1)
-    pdf.cell(70, 10, str(price), border=1, ln=True)
-    
-    pdf.ln(15)
-    pdf.set_text_color(150, 0, 0)
-    pdf.cell(0, 10, "Ghi chú: Giá trên chỉ mang tính tham khảo sơ bộ từ tư vấn viên AI.", ln=True)
-    pdf.cell(0, 10, "Vui lòng liên hệ Hotline hoặc Kỹ thuật viên để khảo sát thực tế và báo giá chính xác nhất.", ln=True)
-    
-    # Return bytes (fpdf2 output() returns bytearray)
     return bytes(pdf.output())
 
 # ==============================================================================
