@@ -7,6 +7,8 @@ import requests
 import google.generativeai as genai
 import re
 from datetime import datetime
+import json
+from fpdf import FPDF
 
 # Tự động nạp cấu hình từ tệp .env (nếu có)
 def load_env():
@@ -69,6 +71,56 @@ def save_contact(phone, prompt):
             requests.post(webhook_url, json=payload, timeout=3)
         except Exception as e:
             print("Lỗi bắn webhook:", e)
+
+def download_font():
+    font_path = "Roboto-Regular.ttf"
+    if not os.path.exists(font_path):
+        url = "https://github.com/google/fonts/raw/main/ofl/roboto/Roboto-Regular.ttf"
+        try:
+            r = requests.get(url, allow_redirects=True)
+            with open(font_path, "wb") as f:
+                f.write(r.content)
+        except Exception as e:
+            print("Lỗi tải font Roboto:", e)
+
+def generate_pdf_quote(customer_name, phone, package, size, price):
+    pdf = FPDF()
+    pdf.add_page()
+    
+    download_font()
+    if os.path.exists("Roboto-Regular.ttf"):
+        pdf.add_font("Roboto", "", "Roboto-Regular.ttf", uni=True)
+        pdf.set_font("Roboto", "", 12)
+    else:
+        pdf.set_font("Arial", "", 12)
+        
+    if os.path.exists("Bảng Hiệu Solar 24h.png"):
+        pdf.image("Bảng Hiệu Solar 24h.png", x=10, y=8, w=40)
+        
+    pdf.cell(0, 10, "CÔNG TY TNHH TMDV SOLAR 24H", ln=True, align="C")
+    pdf.cell(0, 10, "BẢNG BÁO GIÁ ĐIỆN MẶT TRỜI", ln=True, align="C")
+    pdf.ln(15)
+    
+    pdf.cell(0, 10, f"Khách hàng: {customer_name}", ln=True)
+    pdf.cell(0, 10, f"Số điện thoại: {phone}", ln=True)
+    pdf.ln(5)
+    
+    # Bảng
+    pdf.cell(60, 10, "Gói Lắp Đặt", border=1)
+    pdf.cell(60, 10, "Công Suất", border=1)
+    pdf.cell(70, 10, "Tổng Tiền (Ước tính)", border=1, ln=True)
+    
+    pdf.cell(60, 10, str(package), border=1)
+    pdf.cell(60, 10, str(size), border=1)
+    pdf.cell(70, 10, str(price), border=1, ln=True)
+    
+    pdf.ln(15)
+    pdf.set_text_color(150, 0, 0)
+    pdf.cell(0, 10, "Ghi chú: Giá trên chỉ mang tính tham khảo sơ bộ từ tư vấn viên AI.", ln=True)
+    pdf.cell(0, 10, "Vui lòng liên hệ Hotline hoặc Kỹ thuật viên để khảo sát thực tế và báo giá chính xác nhất.", ln=True)
+    
+    # Return bytes (fpdf2 output() returns bytearray)
+    return pdf.output()
 
 # ==============================================================================
 # 1. PAGE CONFIGURATION & CUSTOM STYLING
@@ -771,6 +823,37 @@ with st.sidebar:
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
+
+        # Nút tạo Báo giá PDF
+        if len(st.session_state.messages) > 1:
+            if st.button("📝 Tự động tạo Báo Giá (PDF)"):
+                with st.spinner("AI đang tổng hợp báo giá..."):
+                    chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
+                    extract_prompt = f"""Trích xuất thông tin từ đoạn hội thoại thành JSON với các khóa (key) bắt buộc sau: "customer_name", "phone", "package", "size", "price".
+Nếu thông tin nào không có hoặc chưa được nhắc đến, hãy điền giá trị là 'Chưa cung cấp'.
+Hội thoại:\n{chat_text}"""
+                    try:
+                        ext_model = genai.GenerativeModel('gemini-1.5-flash', generation_config=genai.GenerationConfig(response_mime_type="application/json"))
+                        ext_res = ext_model.generate_content(extract_prompt)
+                        data = json.loads(ext_res.text)
+                        
+                        st.session_state.pdf_bytes = generate_pdf_quote(
+                            data.get('customer_name', 'Khách hàng'),
+                            data.get('phone', 'Chưa cung cấp'),
+                            data.get('package', 'Chưa chọn'),
+                            data.get('size', 'Chưa xác định'),
+                            data.get('price', 'Liên hệ')
+                        )
+                    except Exception as e:
+                        st.error(f"Lỗi khi tổng hợp: {e}")
+            
+            if "pdf_bytes" in st.session_state:
+                st.download_button(
+                    label="📥 Tải file Báo Giá (.pdf)",
+                    data=st.session_state.pdf_bytes,
+                    file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.pdf",
+                    mime="application/pdf"
+                )
 
         # Input từ người dùng
         if prompt := st.chat_input("Hỏi Solar Girl (VD: Gói F2 giá bao nhiêu?)"):
