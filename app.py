@@ -831,36 +831,37 @@ with st.sidebar:
 
         # Nút tạo Báo giá PDF
         # Nút tạo Báo giá Word
-        if len(st.session_state.messages) > 1:
-            if st.button("📝 Tự động tạo Báo Giá (Word)", use_container_width=True):
-                with st.spinner("AI đang tổng hợp báo giá..."):
-                    chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
-                    extract_prompt = f"""Trích xuất thông tin từ đoạn hội thoại thành JSON với các khóa (key) bắt buộc sau: "customer_name", "phone", "package", "size", "price".
-Nếu thông tin nào không có hoặc chưa được nhắc đến, hãy điền giá trị là 'Chưa cung cấp'.
-Hội thoại:\n{chat_text}"""
-                    try:
-                        ext_model = genai.GenerativeModel('gemini-flash-lite-latest', generation_config=genai.GenerationConfig(response_mime_type="application/json"))
-                        ext_res = ext_model.generate_content(extract_prompt)
-                        data = json.loads(ext_res.text)
-                        
-                        st.session_state.docx_bytes = generate_docx_quote(
-                            data.get('customer_name', 'Khách hàng'),
-                            data.get('phone', 'Chưa cung cấp'),
-                            data.get('package', 'Chưa chọn'),
-                            data.get('size', 'Chưa xác định'),
-                            data.get('price', 'Liên hệ')
-                        )
-                    except Exception as e:
-                        st.error(f"Lỗi khi tổng hợp: {e}")
-            
-            if "docx_bytes" in st.session_state:
-                st.download_button(
-                    label="📥 Tải file Báo Giá (.docx)",
-                    data=st.session_state.docx_bytes,
-                    file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    use_container_width=True
-                )
+        # Nút tạo Báo giá Word (TẠM TẮT ĐỂ CẬP NHẬT)
+        # if len(st.session_state.messages) > 1:
+        #     if st.button("📝 Tự động tạo Báo Giá (Word)", use_container_width=True):
+        #         with st.spinner("AI đang tổng hợp báo giá..."):
+        #             chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
+        #             extract_prompt = f"""Trích xuất thông tin từ đoạn hội thoại thành JSON với các khóa (key) bắt buộc sau: "customer_name", "phone", "package", "size", "price".
+        # Nếu thông tin nào không có hoặc chưa được nhắc đến, hãy điền giá trị là 'Chưa cung cấp'.
+        # Hội thoại:\n{chat_text}"""
+        #             try:
+        #                 ext_model = genai.GenerativeModel('gemini-flash-lite-latest', generation_config=genai.GenerationConfig(response_mime_type="application/json"))
+        #                 ext_res = ext_model.generate_content(extract_prompt)
+        #                 data = json.loads(ext_res.text)
+        #                 
+        #                 st.session_state.docx_bytes = generate_docx_quote(
+        #                     data.get('customer_name', 'Khách hàng'),
+        #                     data.get('phone', 'Chưa cung cấp'),
+        #                     data.get('package', 'Chưa chọn'),
+        #                     data.get('size', 'Chưa xác định'),
+        #                     data.get('price', 'Liên hệ')
+        #                 )
+        #             except Exception as e:
+        #                 st.error(f"Lỗi khi tổng hợp: {e}")
+        #     
+        #     if "docx_bytes" in st.session_state:
+        #         st.download_button(
+        #             label="📥 Tải file Báo Giá (.docx)",
+        #             data=st.session_state.docx_bytes,
+        #             file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.docx",
+        #             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        #             use_container_width=True
+        #         )
 
         # Hiển thị lịch sử chat trong một container có chiều cao cố định để cuộn nội dung mượt mà
         chat_container = st.container(height=500)
