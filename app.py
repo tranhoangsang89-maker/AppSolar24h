@@ -84,23 +84,26 @@ def generate_docx_quote(customer_name, phone, package, size, price):
         pkg_data = SOLAR_PACKAGES[pkg_key]
         panels_info = f"{pkg_data['panels']} tấm pin AE Solar 580W"
         storage_info = pkg_data.get('battery', "Không lưu trữ")
-        # Xây dựng danh sách items dựa vào pkg_data
-        items.append({
-            "stt": 1, "name": f"Tấm pin AE SOLAR 580W (Đức) - n-Type TOPCon", "unit": "Tấm", 
-            "quantity": pkg_data['panels'], "price": "", "total": ""
-        })
-        items.append({
-            "stt": 2, "name": f"Biến tần Inverter: {pkg_data['inverter']}", "unit": "Cái",
-            "quantity": 1, "price": "", "total": ""
-        })
+        
+        item1_name = "Tấm pin AE SOLAR 580W (Đức) - n-Type TOPCon"
+        item1_qty = str(pkg_data['panels'])
+        item2_name = f"Biến tần Inverter: {pkg_data['inverter']}"
+        item2_qty = "1"
         if pkg_data.get('battery'):
-            items.append({
-                "stt": 3, "name": f"Pin lưu trữ: {pkg_data['battery']}", "unit": "Bộ",
-                "quantity": 1, "price": "", "total": ""
-            })
+            item3_name = f"Pin lưu trữ: {pkg_data['battery']}"
+            item3_qty = "1"
+        else:
+            item3_name = ""
+            item3_qty = ""
     else:
         panels_info = "Theo thiết kế thực tế"
         storage_info = "Theo nhu cầu"
+        item1_name = "Hệ thống Pin Năng lượng Mặt trời"
+        item1_qty = "Theo khảo sát"
+        item2_name = "Hệ thống Biến tần Inverter"
+        item2_qty = "1"
+        item3_name = "Hệ thống Pin lưu trữ (nếu có)"
+        item3_qty = "Theo khảo sát"
     
     # Context cho template
     context = {
@@ -114,7 +117,12 @@ def generate_docx_quote(customer_name, phone, package, size, price):
         "loan_amount": "30% Giá trị",
         "panels_info": panels_info,
         "storage_info": storage_info,
-        "items": items
+        "item1_name": item1_name,
+        "item1_qty": item1_qty,
+        "item2_name": item2_name,
+        "item2_qty": item2_qty,
+        "item3_name": item3_name,
+        "item3_qty": item3_qty
     }
     
     doc.render(context)
