@@ -8,7 +8,8 @@ import google.generativeai as genai
 import re
 from datetime import datetime
 import json
-from fpdf import FPDF
+from docxtpl import DocxTemplate
+from io import BytesIO
 
 # Tự động nạp cấu hình từ tệp .env (nếu có)
 def load_env():
@@ -59,12 +60,12 @@ def save_contact(phone, prompt):
     webhook_url = os.environ.get("GOOGLE_SHEET_WEBHOOK_URL", "")
     if webhook_url:
         payload = {
-            "ThoiGian": now,
-            "HoTen": "Khách từ AI",
-            "SoDienThoai": phone,
-            "DienTichMai": "N/A",
-            "GoiQuanTam": "N/A",
-            "GhiChu": clean_prompt
+            "time": now,
+            "name": "Khách từ AI",
+            "phone": phone,
+            "area": "N/A",
+            "package": "N/A",
+            "notes": clean_prompt
         }
         try:
             # Gửi không chờ response quá lâu để tránh lag UI
@@ -72,147 +73,57 @@ def save_contact(phone, prompt):
         except Exception as e:
             print("Lỗi bắn webhook:", e)
 
-def download_fonts():
-    font_reg = "Roboto-Regular-New.ttf"
-    font_bold = "Roboto-Bold-New.ttf"
-    urls = {
-        font_reg: "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf",
-        font_bold: "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Bold.ttf"
-    }
-    for path, url in urls.items():
-        if not os.path.exists(path):
-            try:
-                r = requests.get(url, allow_redirects=True, timeout=10)
-                if r.status_code == 200:
-                    with open(path, "wb") as f:
-                        f.write(r.content)
-            except Exception as e:
-                print(f"Lỗi tải font {path}:", e)
-
-def generate_pdf_quote(customer_name, phone, package, size, price):
-    pdf = FPDF()
-    pdf.add_page()
+def generate_docx_quote(customer_name, phone, package, size, price):
+    doc = DocxTemplate("Mẫu Báo Giá.docx")
     
-    download_fonts()
-    has_font = False
-    if os.path.exists("Roboto-Regular-New.ttf") and os.path.exists("Roboto-Bold-New.ttf"):
-        pdf.add_font("Roboto", "", "Roboto-Regular-New.ttf", uni=True)
-        pdf.add_font("Roboto", "B", "Roboto-Bold-New.ttf", uni=True)
-        has_font = True
-        
-    font_family = "Roboto" if has_font else "Arial"
-    
-    # Header styling (Navy Blue)
-    pdf.set_fill_color(10, 37, 64)
-    pdf.rect(0, 0, 210, 35, 'F')
-    
-    if os.path.exists("Logo Solar 24h.png"):
-        pdf.image("Logo Solar 24h.png", x=10, y=5, w=35)
-        
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_font(font_family, "B", 18)
-    pdf.set_xy(50, 10)
-    pdf.cell(150, 10, "CÔNG TY TNHH TMDV SOLAR 24H", ln=True, align="R")
-    pdf.set_font(font_family, "", 11)
-    pdf.set_xy(50, 20)
-    pdf.cell(150, 10, "Giải Pháp Điện Năng Lượng Mặt Trời Trọn Gói", ln=True, align="R")
-    
-    # Title
-    pdf.ln(15)
-    pdf.set_text_color(46, 204, 113) # Leaf Green
-    pdf.set_font(font_family, "B", 20)
-    pdf.cell(0, 12, "BẢNG BÁO GIÁ ĐIỆN MẶT TRỜI", ln=True, align="C")
-    
-    # Date & Ref
-    pdf.set_text_color(100, 100, 100)
-    pdf.set_font(font_family, "", 10)
-    pdf.cell(0, 6, f"Ngày báo giá: {datetime.now().strftime('%d/%m/%Y')} | Ref: AI-{datetime.now().strftime('%H%M')}", ln=True, align="C")
-    
-    # Customer Info Box
-    pdf.ln(10)
-    pdf.set_fill_color(248, 249, 250)
-    pdf.set_draw_color(226, 232, 240)
-    pdf.rect(10, pdf.get_y(), 190, 25, 'FD')
-    
-    pdf.set_xy(15, pdf.get_y() + 5)
-    pdf.set_text_color(10, 37, 64)
-    pdf.set_font(font_family, "B", 11)
-    pdf.cell(40, 7, "Khách hàng:")
-    pdf.set_font(font_family, "", 11)
-    pdf.cell(100, 7, f"{customer_name}")
-    pdf.ln(7)
-    
-    pdf.set_x(15)
-    pdf.set_font(font_family, "B", 11)
-    pdf.cell(40, 7, "Số điện thoại:")
-    pdf.set_font(font_family, "", 11)
-    pdf.cell(100, 7, f"{phone}")
-    pdf.ln(15)
-    
-    # Main Table
-    pdf.set_fill_color(46, 204, 113) # Green header
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_font(font_family, "B", 11)
-    
-    pdf.cell(70, 10, "GÓI SẢN PHẨM", border=1, fill=True, align="C")
-    pdf.cell(50, 10, "CÔNG SUẤT", border=1, fill=True, align="C")
-    pdf.cell(70, 10, "TỔNG TIỀN (VNĐ)", border=1, fill=True, align="C")
-    pdf.ln(10)
-    
-    pdf.set_text_color(10, 37, 64)
-    pdf.set_font(font_family, "B", 12)
-    pdf.cell(70, 12, str(package).upper(), border=1, align="C")
-    pdf.cell(50, 12, str(size), border=1, align="C")
-    pdf.set_text_color(229, 62, 62) # Red for price
-    pdf.cell(70, 12, str(price), border=1, align="C")
-    pdf.ln(15)
-    
-    # Detailed Specs
-    pdf.set_text_color(10, 37, 64)
     # Tìm kiếm package trong SOLAR_PACKAGES kể cả khi AI trả về chữ thường hoặc có khoảng trắng dư
     pkg_key = next((k for k in SOLAR_PACKAGES.keys() if k.lower().replace(" ", "") == str(package).lower().replace(" ", "")), None)
     
+    items = []
     if pkg_key:
         pkg_data = SOLAR_PACKAGES[pkg_key]
-        pdf.set_font(font_family, "B", 13)
-        pdf.cell(0, 10, "THÔNG SỐ KỸ THUẬT & VẬT TƯ:", ln=True)
-        
-        pdf.set_font(font_family, "", 11)
-        pdf.ln(2)
-        pdf.cell(0, 7, f"- Khả năng phát điện trung bình: {pkg_data['gen_min']} - {pkg_data['gen_max']} kWh/ngày.", ln=True)
-        pdf.cell(0, 7, f"- Số lượng tấm pin: {pkg_data['panels']} Tấm pin AE Solar (Đức) 580W.", ln=True)
-        pdf.cell(0, 7, f"- Biến tần Inverter: {pkg_data['inverter']}.", ln=True)
-        pdf.cell(0, 7, f"- Pin lưu trữ Lithium: {pkg_data['battery']}.", ln=True)
-        
-        pdf.ln(5)
-        pdf.set_font(font_family, "B", 12)
-        pdf.cell(0, 8, "Trọn gói hệ thống bao gồm:", ln=True)
-        pdf.set_font(font_family, "", 11)
-        for item in pkg_data['checklist']:
-            pdf.set_x(15)
-            pdf.cell(0, 6, f"+ {item}", ln=True)
+        panels_info = f"{pkg_data['panels']} tấm pin AE Solar 580W"
+        storage_info = pkg_data.get('battery', "Không lưu trữ")
+        # Xây dựng danh sách items dựa vào pkg_data
+        items.append({
+            "stt": 1, "name": f"Tấm pin AE SOLAR 580W (Đức) - n-Type TOPCon", "unit": "Tấm", 
+            "quantity": pkg_data['panels'], "price": "", "total": ""
+        })
+        items.append({
+            "stt": 2, "name": f"Biến tần Inverter: {pkg_data['inverter']}", "unit": "Cái",
+            "quantity": 1, "price": "", "total": ""
+        })
+        if pkg_data.get('battery'):
+            items.append({
+                "stt": 3, "name": f"Pin lưu trữ: {pkg_data['battery']}", "unit": "Bộ",
+                "quantity": 1, "price": "", "total": ""
+            })
     else:
-        pdf.set_font(font_family, "B", 12)
-        pdf.cell(0, 10, "THÔNG TIN CHI TIẾT:", ln=True)
-        pdf.set_font(font_family, "", 11)
-        pdf.multi_cell(0, 7, f"Hệ thống đã được thiết kế sơ bộ theo tư vấn của AI. Vui lòng liên hệ để khảo sát thực tế và lên phương án chi tiết nhất.")
-        
-    # Footer Disclaimers
-    pdf.ln(15)
-    pdf.set_font(font_family, "", 10)
-    pdf.set_text_color(100, 100, 100)
-    pdf.multi_cell(0, 6, "(*) Ghi chú: Bảng báo giá trên được tổng hợp tự động bởi Trợ lý AI và mang tính chất ước tính sơ bộ. Chi phí thực tế có thể thay đổi một chút tùy thuộc vào kết cấu mái nhà, vật tư cáp điện phát sinh khi khảo sát thực tế và các chương trình ưu đãi hiện hành của công ty.")
+        panels_info = "Theo thiết kế thực tế"
+        storage_info = "Theo nhu cầu"
     
-    pdf.ln(8)
-    pdf.set_font(font_family, "B", 11)
-    pdf.set_text_color(46, 204, 113)
-    pdf.cell(0, 6, "LIÊN HỆ KHẢO SÁT THỰC TẾ & KÝ HỢP ĐỒNG:", ln=True)
-    pdf.set_text_color(10, 37, 64)
-    pdf.set_font(font_family, "", 11)
-    pdf.cell(0, 6, "Hotline/Zalo: 0909.363.579 - 0896.488.299", ln=True)
-    pdf.cell(0, 6, "Địa chỉ: Khu Phố Long Hòa A, Phường Đạo Thạnh, Tỉnh Đồng Tháp", ln=True)
+    # Context cho template
+    context = {
+        "customer_name": customer_name,
+        "phone": phone,
+        "package_name": str(package).upper(),
+        "capacity_kwp": size,
+        "area": "Tương ứng công suất",
+        "total_price": price,
+        "upfront_price": "70% Giá trị",
+        "loan_amount": "30% Giá trị",
+        "panels_info": panels_info,
+        "storage_info": storage_info,
+        "items": items
+    }
     
-    return bytes(pdf.output())
+    doc.render(context)
+    
+    # Lưu ra bytes
+    io_stream = BytesIO()
+    doc.save(io_stream)
+    io_stream.seek(0)
+    return io_stream.getvalue()
 
 # ==============================================================================
 # 1. PAGE CONFIGURATION & CUSTOM STYLING
@@ -911,8 +822,9 @@ with st.sidebar:
         system_context = f"{ai_knowledge_base}\n\n[Dữ liệu cấu hình kỹ thuật nội bộ tham khảo thêm: {SOLAR_PACKAGES}]"
 
         # Nút tạo Báo giá PDF
+        # Nút tạo Báo giá Word
         if len(st.session_state.messages) > 1:
-            if st.button("📝 Tự động tạo Báo Giá (PDF)", use_container_width=True):
+            if st.button("📝 Tự động tạo Báo Giá (Word)", use_container_width=True):
                 with st.spinner("AI đang tổng hợp báo giá..."):
                     chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
                     extract_prompt = f"""Trích xuất thông tin từ đoạn hội thoại thành JSON với các khóa (key) bắt buộc sau: "customer_name", "phone", "package", "size", "price".
@@ -923,7 +835,7 @@ Hội thoại:\n{chat_text}"""
                         ext_res = ext_model.generate_content(extract_prompt)
                         data = json.loads(ext_res.text)
                         
-                        st.session_state.pdf_bytes = generate_pdf_quote(
+                        st.session_state.docx_bytes = generate_docx_quote(
                             data.get('customer_name', 'Khách hàng'),
                             data.get('phone', 'Chưa cung cấp'),
                             data.get('package', 'Chưa chọn'),
@@ -933,12 +845,12 @@ Hội thoại:\n{chat_text}"""
                     except Exception as e:
                         st.error(f"Lỗi khi tổng hợp: {e}")
             
-            if "pdf_bytes" in st.session_state:
+            if "docx_bytes" in st.session_state:
                 st.download_button(
-                    label="📥 Tải file Báo Giá (.pdf)",
-                    data=st.session_state.pdf_bytes,
-                    file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.pdf",
-                    mime="application/pdf",
+                    label="📥 Tải file Báo Giá (.docx)",
+                    data=st.session_state.docx_bytes,
+                    file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     use_container_width=True
                 )
 
@@ -951,8 +863,8 @@ Hội thoại:\n{chat_text}"""
 
         # Input từ người dùng
         if prompt := st.chat_input("Hỏi Solar Girl (VD: Gói F2 giá bao nhiêu?)"):
-            # Nhận diện số điện thoại (bắt đầu bằng 0, độ dài 10 số)
-            phone_match = re.search(r'\b0\d{9}\b', prompt)
+            # Nhận diện số điện thoại (bắt đầu bằng 0, cho phép có khoảng trắng, dấu chấm hoặc gạch ngang)
+            phone_match = re.search(r'0\d{3}[\s.-]?\d{3}[\s.-]?\d{3}', prompt)
             if phone_match:
                 phone_num = phone_match.group()
                 save_contact(phone_num, prompt)
