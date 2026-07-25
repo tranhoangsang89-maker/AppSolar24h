@@ -634,14 +634,14 @@ def calculate_shinhan_installment(loan_amount, term_months):
 # ==============================================================================
 # 3. HEADER (LOGO & BRANDING)
 # ==============================================================================
-col_logo, col_title, col_banner = st.columns([1, 2.5, 2.5])
+col_logo, col_title, col_banner = st.columns([1.5, 2, 2.5])
 
 with col_logo:
     logo_path = "Logo Solar 24h.png"
     if os.path.exists(logo_path):
         try:
             logo_img = Image.open(logo_path)
-            st.image(logo_img, width=150)
+            st.image(logo_img, width=220)
         except Exception:
             st.markdown("<h2 style='color:#2ECC71; margin:0;'>Solar 24h</h2>", unsafe_allow_html=True)
     else:
@@ -650,7 +650,6 @@ with col_logo:
 with col_title:
     st.markdown("""
         <div style='padding-top: 15px;'>
-            <h1 style='color: #0A2540; margin: 0; font-size: 2.5rem; font-weight: 800;'>SOLAR 24H</h1>
             <p style='color: #2ECC71; font-size: 1.25rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 1px;'>
                 Giải Pháp Điện Năng Lượng Mặt Trời Trọn Gói
             </p>
@@ -911,14 +910,9 @@ with st.sidebar:
         # Xây dựng context tĩnh về hệ thống để gửi kèm cho AI
         system_context = f"{ai_knowledge_base}\n\n[Dữ liệu cấu hình kỹ thuật nội bộ tham khảo thêm: {SOLAR_PACKAGES}]"
 
-        # Hiển thị lịch sử chat
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-
         # Nút tạo Báo giá PDF
         if len(st.session_state.messages) > 1:
-            if st.button("📝 Tự động tạo Báo Giá (PDF)"):
+            if st.button("📝 Tự động tạo Báo Giá (PDF)", use_container_width=True):
                 with st.spinner("AI đang tổng hợp báo giá..."):
                     chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
                     extract_prompt = f"""Trích xuất thông tin từ đoạn hội thoại thành JSON với các khóa (key) bắt buộc sau: "customer_name", "phone", "package", "size", "price".
@@ -944,8 +938,16 @@ Hội thoại:\n{chat_text}"""
                     label="📥 Tải file Báo Giá (.pdf)",
                     data=st.session_state.pdf_bytes,
                     file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.pdf",
-                    mime="application/pdf"
+                    mime="application/pdf",
+                    use_container_width=True
                 )
+
+        # Hiển thị lịch sử chat trong một container có chiều cao cố định để cuộn nội dung mượt mà
+        chat_container = st.container(height=500)
+        with chat_container:
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
 
         # Input từ người dùng
         if prompt := st.chat_input("Hỏi Solar Girl (VD: Gói F2 giá bao nhiêu?)"):
@@ -958,31 +960,33 @@ Hội thoại:\n{chat_text}"""
 
             # Thêm tin nhắn của người dùng vào giao diện và session state
             st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
 
             # Gọi Gemini API
-            with st.chat_message("assistant"):
-                message_placeholder = st.empty()
-                try:
-                    # Thiết lập model (Đổi sang gemini-flash-lite-latest để hỗ trợ user mới & quota cao)
-                    model = genai.GenerativeModel('gemini-flash-lite-latest', system_instruction=system_context)
-                    
-                    # Chuyển đổi lịch sử chat sang định dạng của genai
-                    chat_history = []
-                    for m in st.session_state.messages[:-1]: # Loại bỏ câu user cuối cùng vì sẽ dùng làm prompt
-                        role = "user" if m["role"] == "user" else "model"
-                        # Bỏ qua tin nhắn đầu tiên (lời chào) nếu API không nhận diện tốt
-                        chat_history.append({"role": role, "parts": [m["content"]]})
+            with chat_container:
+                with st.chat_message("assistant"):
+                    message_placeholder = st.empty()
+                    try:
+                        # Thiết lập model (Đổi sang gemini-flash-lite-latest để hỗ trợ user mới & quota cao)
+                        model = genai.GenerativeModel('gemini-flash-lite-latest', system_instruction=system_context)
                         
-                    chat = model.start_chat(history=chat_history)
-                    response = chat.send_message(prompt)
-                    
-                    full_response = response.text
-                    message_placeholder.markdown(full_response)
-                    st.session_state.messages.append({"role": "assistant", "content": full_response})
-                except Exception as e:
-                    st.error(f"Đã xảy ra lỗi khi gọi AI: {str(e)}")
+                        # Chuyển đổi lịch sử chat sang định dạng của genai
+                        chat_history = []
+                        for m in st.session_state.messages[:-1]: # Loại bỏ câu user cuối cùng vì sẽ dùng làm prompt
+                            role = "user" if m["role"] == "user" else "model"
+                            # Bỏ qua tin nhắn đầu tiên (lời chào) nếu API không nhận diện tốt
+                            chat_history.append({"role": role, "parts": [m["content"]]})
+                            
+                        chat = model.start_chat(history=chat_history)
+                        response = chat.send_message(prompt)
+                        
+                        full_response = response.text
+                        message_placeholder.markdown(full_response)
+                        st.session_state.messages.append({"role": "assistant", "content": full_response})
+                    except Exception as e:
+                        st.error(f"Đã xảy ra lỗi khi gọi AI: {str(e)}")
 
 st.write("---")
 
