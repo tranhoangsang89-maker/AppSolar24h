@@ -143,6 +143,31 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Chống lỗi auto-scroll xuống cuối trang của st.chat_input (Force Scroll & Blur Focus)
+if "first_load_scroll_fix" not in st.session_state:
+    st.session_state.first_load_scroll_fix = True
+    import streamlit.components.v1 as components
+    components.html(
+        """
+        <script>
+            let attempts = 0;
+            let forceScroll = setInterval(function() {
+                window.parent.scrollTo(0, 0);
+                
+                // Hủy focus (blur) khỏi tất cả các ô nhập liệu (đặc biệt là chat_input) để trình duyệt không tự kéo xuống
+                let inputs = window.parent.document.querySelectorAll('textarea, input');
+                inputs.forEach(el => el.blur());
+                
+                attempts++;
+                if (attempts > 10) {
+                    clearInterval(forceScroll);
+                }
+            }, 100);
+        </script>
+        """,
+        height=0,
+    )
+
 # Premium UI Styling: Navy Blue (#0A2540), Leaf Green (#2ECC71), Accent Gold (#F1C40F)
 st.markdown("""
 <style>
@@ -628,164 +653,6 @@ with col_banner:
             st.markdown(f'<div class="mobile-hide"><img src="data:image/png;base64,{encoded_string}" width="100%" style="border-radius:8px;"></div>', unsafe_allow_html=True)
         except Exception:
             pass
-
-st.write("---")
-
-# ==============================================================================
-# TRỢ LÝ AI TƯ VẤN (SOLAR GIRL)
-# ==============================================================================
-# ==============================================================================
-# SIDEBAR: TRỢ LÝ AI TƯ VẤN (SOLAR GIRL)
-# ==============================================================================
-# Hiển thị linh vật Solar Girl
-solar_girl_path = "SolarGirl.png"
-if os.path.exists(solar_girl_path):
-    st.image(solar_girl_path, use_container_width=True)
-    
-st.markdown("### 🤖 Trợ lý Solar Girl")
-st.markdown("Hỏi tôi bất cứ điều gì về các gói điện mặt trời, chính sách trả góp, hoặc kỹ thuật hệ thống.")
-st.markdown("---")
-
-if not ai_ready:
-    st.warning("⚠️ Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm API key vào file `.env` hoặc `secrets.toml` để sử dụng tính năng này.")
-else:
-    # Khởi tạo session state cho lịch sử chat
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-        # Thêm lời chào ban đầu
-        st.session_state.messages.append({"role": "assistant", "content": "Xin chào! Mình là Solar Girl - Trợ lý AI của Solar 24h. Mình có thể giúp gì cho gia đình/doanh nghiệp bạn hôm nay?"})
-
-    # Xây dựng context tĩnh về hệ thống để gửi kèm cho AI
-    system_context = f"{ai_knowledge_base}\n\n[Dữ liệu cấu hình kỹ thuật nội bộ tham khảo thêm: {SOLAR_PACKAGES}]"
-
-    # Nút tạo Báo giá PDF
-    # Nút tạo Báo giá Word
-    # Nút tạo Báo giá Word (TẠM TẮT ĐỂ CẬP NHẬT)
-    # if len(st.session_state.messages) > 1:
-    #     if st.button("📝 Tự động tạo Báo Giá (Word)", use_container_width=True):
-    #         with st.spinner("AI đang tổng hợp báo giá..."):
-    #             chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
-    #             extract_prompt = f"""Trích xuất thông tin từ đoạn hội thoại thành JSON với các khóa (key) bắt buộc sau: "customer_name", "phone", "package", "size", "price".
-    # Nếu thông tin nào không có hoặc chưa được nhắc đến, hãy điền giá trị là 'Chưa cung cấp'.
-    # Hội thoại:\n{chat_text}"""
-    #             try:
-    #                 ext_model = genai.GenerativeModel('gemini-flash-lite-latest', generation_config=genai.GenerationConfig(response_mime_type="application/json"))
-    #                 ext_res = ext_model.generate_content(extract_prompt)
-    #                 data = json.loads(ext_res.text)
-    #                 
-    #                 st.session_state.docx_bytes = generate_docx_quote(
-    #                     data.get('customer_name', 'Khách hàng'),
-    #                     data.get('phone', 'Chưa cung cấp'),
-    #                     data.get('package', 'Chưa chọn'),
-    #                     data.get('size', 'Chưa xác định'),
-    #                     data.get('price', 'Liên hệ')
-    #                 )
-    #             except Exception as e:
-    #                 st.error(f"Lỗi khi tổng hợp: {e}")
-    #     
-    #     if "docx_bytes" in st.session_state:
-    #         st.download_button(
-    #             label="📥 Tải file Báo Giá (.docx)",
-    #             data=st.session_state.docx_bytes,
-    #             file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.docx",
-    #             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    #             use_container_width=True
-    #         )
-
-    # Hiển thị lịch sử chat trong một container có chiều cao cố định để cuộn nội dung mượt mà
-    chat_container = st.container(height=500)
-    with chat_container:
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-                if "image" in message and message["image"] is not None:
-                    st.image(message["image"], width=250)
-
-    # Input từ người dùng với tính năng đính kèm ảnh
-    if prompt_data := st.chat_input("Hỏi Solar Girl (VD: Gói F2 giá bao nhiêu?)", accept_file=True, file_type=["png", "jpg", "jpeg"]):
-        prompt_text = prompt_data.text if hasattr(prompt_data, "text") else prompt_data["text"] if isinstance(prompt_data, dict) else prompt_data
-        if not prompt_text:
-            prompt_text = "Hãy phân tích hình ảnh này và tư vấn cho tôi."
-            
-        # Xử lý ảnh nếu có
-        user_img_pil = None
-        if hasattr(prompt_data, "files") and prompt_data.files:
-            try:
-                user_img_pil = Image.open(prompt_data.files[0])
-            except Exception:
-                pass
-        elif isinstance(prompt_data, dict) and prompt_data.get("files"):
-            try:
-                user_img_pil = Image.open(prompt_data["files"][0])
-            except Exception:
-                pass
-                
-        # Nhận diện số điện thoại (bắt đầu bằng 0, cho phép có khoảng trắng, dấu chấm hoặc gạch ngang)
-        phone_match = re.search(r'0\d{3}[\s.-]?\d{3}[\s.-]?\d{3}', prompt_text)
-        if phone_match:
-            phone_num = phone_match.group()
-            save_contact(phone_num, prompt_text)
-            st.toast(f"Hệ thống đã tự động lưu số điện thoại: {phone_num}", icon="✅")
-
-        # Thêm tin nhắn của người dùng vào giao diện và session state
-        st.session_state.messages.append({"role": "user", "content": prompt_text, "image": user_img_pil})
-        with chat_container:
-            with st.chat_message("user"):
-                st.markdown(prompt_text)
-                if user_img_pil:
-                    st.image(user_img_pil, width=250)
-
-        # Gọi Gemini API
-        with chat_container:
-            with st.chat_message("assistant"):
-                message_placeholder = st.empty()
-                try:
-                    def ai_calculate_installment(loan_amount: int, term_months: int) -> dict:
-                        """Hàm hỗ trợ AI tính toán chi tiết số tiền trả góp hàng tháng của ngân hàng Shinhan. Lãi suất phẳng 0.59%/tháng.
-                        Args:
-                            loan_amount: Tổng số tiền vay (VNĐ). Ví dụ: 50000000
-                            term_months: Số tháng trả góp. (Thường là 12, 24, 36, 48)
-                        Returns:
-                            dict: Kết quả số tiền phải trả mỗi tháng
-                        """
-                        flat_rate = 0.0059
-                        monthly_interest = loan_amount * flat_rate
-                        monthly_principal = loan_amount / term_months
-                        total = monthly_principal + monthly_interest
-                        return {
-                            "total_monthly_payment": round(total),
-                            "monthly_principal": round(monthly_principal),
-                            "monthly_interest": round(monthly_interest)
-                        }
-                        
-                    # Thiết lập model (Giữ nguyên gemini-flash-lite-latest, thêm công cụ và giảm nhiệt độ)
-                    generation_config = genai.GenerationConfig(temperature=0.2)
-                    model = genai.GenerativeModel('gemini-flash-lite-latest', system_instruction=system_context, tools=[ai_calculate_installment], generation_config=generation_config)
-                    
-                    # Chuyển đổi lịch sử chat sang định dạng của genai
-                    chat_history = []
-                    for m in st.session_state.messages[:-1]: # Loại bỏ câu user cuối cùng vì sẽ dùng làm prompt
-                        role = "user" if m["role"] == "user" else "model"
-                        # Bỏ qua tin nhắn đầu tiên (lời chào) nếu API không nhận diện tốt
-                        parts = [m["content"]]
-                        if "image" in m and m["image"] is not None:
-                            parts.append(m["image"])
-                        chat_history.append({"role": role, "parts": parts})
-                        
-                    chat = model.start_chat(history=chat_history, enable_automatic_function_calling=True)
-                    
-                    # Chuẩn bị dữ liệu gửi đi (văn bản + ảnh nếu có)
-                    current_parts = [prompt_text]
-                    if user_img_pil:
-                        current_parts.append(user_img_pil)
-                        
-                    response = chat.send_message(current_parts)
-                    
-                    full_response = response.text
-                    message_placeholder.markdown(full_response)
-                    st.session_state.messages.append({"role": "assistant", "content": full_response})
-                except Exception as e:
-                    st.error(f"Đã xảy ra lỗi khi gọi AI: {str(e)}")
 
 st.write("---")
 
@@ -1372,3 +1239,164 @@ st.markdown("""
     © 2026 Solar 24h. Đã đăng ký bảo hộ thương hiệu toàn quốc.
 </div>
 """, unsafe_allow_html=True)
+
+
+# ==============================================================================
+# ==============================================================================
+# TRỢ LÝ AI TƯ VẤN (SOLAR GIRL)
+# ==============================================================================
+# ==============================================================================
+# SIDEBAR: TRỢ LÝ AI TƯ VẤN (SOLAR GIRL)
+# ==============================================================================
+# Hiển thị linh vật Solar Girl
+solar_girl_path = "SolarGirl.png"
+if os.path.exists(solar_girl_path):
+    st.image(solar_girl_path, use_container_width=True)
+    
+st.markdown("### 🤖 Trợ lý Solar Girl")
+st.markdown("Hỏi tôi bất cứ điều gì về các gói điện mặt trời, chính sách trả góp, hoặc kỹ thuật hệ thống.")
+st.markdown("---")
+
+if not ai_ready:
+    st.warning("⚠️ Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm API key vào file `.env` hoặc `secrets.toml` để sử dụng tính năng này.")
+else:
+    # Khởi tạo session state cho lịch sử chat
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+        # Thêm lời chào ban đầu
+        st.session_state.messages.append({"role": "assistant", "content": "Xin chào! Mình là Solar Girl - Trợ lý AI của Solar 24h. Mình có thể giúp gì cho gia đình/doanh nghiệp bạn hôm nay?"})
+
+    # Xây dựng context tĩnh về hệ thống để gửi kèm cho AI
+    system_context = f"{ai_knowledge_base}\n\n[Dữ liệu cấu hình kỹ thuật nội bộ tham khảo thêm: {SOLAR_PACKAGES}]"
+
+    # Nút tạo Báo giá PDF
+    # Nút tạo Báo giá Word
+    # Nút tạo Báo giá Word (TẠM TẮT ĐỂ CẬP NHẬT)
+    # if len(st.session_state.messages) > 1:
+    #     if st.button("📝 Tự động tạo Báo Giá (Word)", use_container_width=True):
+    #         with st.spinner("AI đang tổng hợp báo giá..."):
+    #             chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages])
+    #             extract_prompt = f"""Trích xuất thông tin từ đoạn hội thoại thành JSON với các khóa (key) bắt buộc sau: "customer_name", "phone", "package", "size", "price".
+    # Nếu thông tin nào không có hoặc chưa được nhắc đến, hãy điền giá trị là 'Chưa cung cấp'.
+    # Hội thoại:\n{chat_text}"""
+    #             try:
+    #                 ext_model = genai.GenerativeModel('gemini-flash-lite-latest', generation_config=genai.GenerationConfig(response_mime_type="application/json"))
+    #                 ext_res = ext_model.generate_content(extract_prompt)
+    #                 data = json.loads(ext_res.text)
+    #                 
+    #                 st.session_state.docx_bytes = generate_docx_quote(
+    #                     data.get('customer_name', 'Khách hàng'),
+    #                     data.get('phone', 'Chưa cung cấp'),
+    #                     data.get('package', 'Chưa chọn'),
+    #                     data.get('size', 'Chưa xác định'),
+    #                     data.get('price', 'Liên hệ')
+    #                 )
+    #             except Exception as e:
+    #                 st.error(f"Lỗi khi tổng hợp: {e}")
+    #     
+    #     if "docx_bytes" in st.session_state:
+    #         st.download_button(
+    #             label="📥 Tải file Báo Giá (.docx)",
+    #             data=st.session_state.docx_bytes,
+    #             file_name=f"BaoGia_Solar24h_{datetime.now().strftime('%Y%m%d')}.docx",
+    #             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    #             use_container_width=True
+    #         )
+
+    # Hiển thị lịch sử chat trong một container có chiều cao cố định để cuộn nội dung mượt mà
+    chat_container = st.container(height=500)
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+                if "image" in message and message["image"] is not None:
+                    st.image(message["image"], width=250)
+
+    # Input từ người dùng với tính năng đính kèm ảnh
+    if prompt_data := st.chat_input("Hỏi Solar Girl (VD: Gói F2 giá bao nhiêu?)", accept_file=True, file_type=["png", "jpg", "jpeg"]):
+        prompt_text = prompt_data.text if hasattr(prompt_data, "text") else prompt_data["text"] if isinstance(prompt_data, dict) else prompt_data
+        if not prompt_text:
+            prompt_text = "Hãy phân tích hình ảnh này và tư vấn cho tôi."
+            
+        # Xử lý ảnh nếu có
+        user_img_pil = None
+        if hasattr(prompt_data, "files") and prompt_data.files:
+            try:
+                user_img_pil = Image.open(prompt_data.files[0])
+            except Exception:
+                pass
+        elif isinstance(prompt_data, dict) and prompt_data.get("files"):
+            try:
+                user_img_pil = Image.open(prompt_data["files"][0])
+            except Exception:
+                pass
+                
+        # Nhận diện số điện thoại (bắt đầu bằng 0, cho phép có khoảng trắng, dấu chấm hoặc gạch ngang)
+        phone_match = re.search(r'0\d{3}[\s.-]?\d{3}[\s.-]?\d{3}', prompt_text)
+        if phone_match:
+            phone_num = phone_match.group()
+            save_contact(phone_num, prompt_text)
+            st.toast(f"Hệ thống đã tự động lưu số điện thoại: {phone_num}", icon="✅")
+
+        # Thêm tin nhắn của người dùng vào giao diện và session state
+        st.session_state.messages.append({"role": "user", "content": prompt_text, "image": user_img_pil})
+        with chat_container:
+            with st.chat_message("user"):
+                st.markdown(prompt_text)
+                if user_img_pil:
+                    st.image(user_img_pil, width=250)
+
+        # Gọi Gemini API
+        with chat_container:
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                try:
+                    def ai_calculate_installment(loan_amount: int, term_months: int) -> dict:
+                        """Hàm hỗ trợ AI tính toán chi tiết số tiền trả góp hàng tháng của ngân hàng Shinhan. Lãi suất phẳng 0.59%/tháng.
+                        Args:
+                            loan_amount: Tổng số tiền vay (VNĐ). Ví dụ: 50000000
+                            term_months: Số tháng trả góp. (Thường là 12, 24, 36, 48)
+                        Returns:
+                            dict: Kết quả số tiền phải trả mỗi tháng
+                        """
+                        flat_rate = 0.0059
+                        monthly_interest = loan_amount * flat_rate
+                        monthly_principal = loan_amount / term_months
+                        total = monthly_principal + monthly_interest
+                        return {
+                            "total_monthly_payment": round(total),
+                            "monthly_principal": round(monthly_principal),
+                            "monthly_interest": round(monthly_interest)
+                        }
+                        
+                    # Thiết lập model (Giữ nguyên gemini-flash-lite-latest, thêm công cụ và giảm nhiệt độ)
+                    generation_config = genai.GenerationConfig(temperature=0.2)
+                    model = genai.GenerativeModel('gemini-flash-lite-latest', system_instruction=system_context, tools=[ai_calculate_installment], generation_config=generation_config)
+                    
+                    # Chuyển đổi lịch sử chat sang định dạng của genai
+                    chat_history = []
+                    for m in st.session_state.messages[:-1]: # Loại bỏ câu user cuối cùng vì sẽ dùng làm prompt
+                        role = "user" if m["role"] == "user" else "model"
+                        # Bỏ qua tin nhắn đầu tiên (lời chào) nếu API không nhận diện tốt
+                        parts = [m["content"]]
+                        if "image" in m and m["image"] is not None:
+                            parts.append(m["image"])
+                        chat_history.append({"role": role, "parts": parts})
+                        
+                    chat = model.start_chat(history=chat_history, enable_automatic_function_calling=True)
+                    
+                    # Chuẩn bị dữ liệu gửi đi (văn bản + ảnh nếu có)
+                    current_parts = [prompt_text]
+                    if user_img_pil:
+                        current_parts.append(user_img_pil)
+                        
+                    response = chat.send_message(current_parts)
+                    
+                    full_response = response.text
+                    message_placeholder.markdown(full_response)
+                    st.session_state.messages.append({"role": "assistant", "content": full_response})
+                except Exception as e:
+                    st.error(f"Đã xảy ra lỗi khi gọi AI: {str(e)}")
+
+st.write("---")
+
