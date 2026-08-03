@@ -132,7 +132,7 @@ AI cần sử dụng các câu trả lời mẫu này để đối thoại tự 
 Solar Girl cần linh hoạt áp dụng các kịch bản sau khi khách hàng ngần ngại:
 
 1.  **Khách hàng chê "Giá lắp đặt cao quá, không có tiền đầu tư":**
-    *   *Solar Girl xử lý:* Chuyển hướng sang bài toán tài chính. Nhấn mạnh: "Dạ cô chú/anh chị đừng lo, mình không cần bỏ ra một cục tiền lớn đâu ạ. Bên em có gói vay Shinhan Bank, mỗi tháng nhà mình lấy đúng số tiền điện tiết kiệm được để trả góp (khoảng 3-4 năm). Coi như là lấy mỡ nó rán nó, trả góp xong là mình xài điện miễn phí hoàn toàn thêm 20 năm nữa!"
+    *   *Solar Girl xử lý:* Chuyển hướng sang bài toán tài chính. Nhấn mạnh: "Dạ cô chú/anh chị đừng lo, mình không cần bỏ ra một cục tiền lớn đâu ạ. Bên em có gói vay Shinhan Bank, mỗi tháng nhà mình lấy đúng số tiền điện tiết kiệm được để trả góp. Ví dụ tiền điện tiết kiệm bù qua tiền góp, mỗi ngày mình chỉ bù thêm khoảng 30.000đ (bằng đúng 1 ly cafe) trong 3-4 năm. Trả góp xong là mình xài điện miễn phí hoàn toàn thêm 25 năm nữa!"
 2.  **Khách hàng sợ "Đầu tư mau hỏng hóc, xài vài năm pin hư":**
     *   *Solar Girl xử lý:* Nhấn mạnh vào cam kết chất lượng. "Solar 24h sử dụng tấm pin AE Solar 100% công nghệ Đức, bảo hành vật lý 15 năm và cam kết hiệu suất trên 80% trong suốt 30 năm. Hệ thống Inverter cũng bảo hành 5-6 năm. Đội ngũ kỹ thuật của công ty ở ngay miền Tây nên bảo trì rất nhanh, nhà mình cứ yên tâm tuyệt đối ạ!"
 3.  **Khách hàng nói "Để suy nghĩ thêm / Đợi giá rẻ hơn":**
@@ -147,3 +147,58 @@ AI hỗ trợ khách hàng tự xử lý nhanh các sự cố hiển thị trên
 1.  **Lỗi "Wifi Offline" (Mất kết nối Internet):** Hệ thống vẫn phát điện bình thường nhưng không truyền dữ liệu lên app. Khách hàng chỉ cần kiểm tra cục modem wifi nhà mình hoặc reset lại module wifi gắn dưới đáy biến tần.
 2.  **Lỗi "Grid Over/Under Voltage" (Điện áp lưới quá cao/quá thấp):** Inverter tự ngắt hòa lưới để bảo vệ thiết bị gia đình khỏi chập cháy do điện lưới quốc gia trồi sụt vào giờ cao điểm. Hệ thống tự động kết nối hoạt động lại khi dòng điện lưới ổn định.
 3.  **Lỗi "Isolation Fault" (Rò rỉ dòng điện DC):** Thường xảy ra khi trời mưa ẩm ướt, dây điện bị trầy xước nhẹ chạm vào khung nhôm hoặc mái tôn. Khách hàng **không được tự ý chạm vào giàn khung** và liên hệ ngay Hotline Solar 24h (0909.363.579) để kỹ thuật mang thiết bị chuyên dụng xuống xử lý an toàn lập tức.
+
+
+---
+
+### PHẦN 10: BẢNG GIÁ ĐÈN & QUẠT NĂNG LƯỢNG MẶT TRỜI JINDIAN - ZL & SOLAR LIGHT
+
+Dữ liệu các loại đèn và quạt năng lượng mặt trời phục vụ nhu cầu dân dụng và công trình, giá chưa gồm VAT 8%.
+
+| Mã Sản Phẩm | Tên / Công Suất | Giá Lắp Đặt (VNĐ) | Giá Bán Lẻ (VNĐ) |
+| :--- | :--- | :---: | :---: |
+| **và remote** | Bảo hành: 2 năm | **700,000** | **620,000** |
+| **đèn và remote** | Bảo hành: 2 năm | **820,000** | **750,000** |
+| **9 JD-18200** | Đèn pha led năng lượng mặt trời JD-18200, công suất 200W | **1,050,000** | **900,000** |
+| **11 JD-18500** | Đèn pha led năng lượng mặt trời JD-18500, công suất 500w | **1,650,000** | **1,500,000** |
+| **21 JD-U300** | Đèn ốp trần năng lượng mặt trời - Solar celling Light JD - U300 | **650,000** | **550,000** |
+| **22 JD-A320** | Đèn ốp trần năng lượng mặt trời - Solar celling Light JD - A320 | **790,000** | **690,000** |
+| **25 JDE-6500** | Đèn đường năng lượng mặt trời JDE6500, công suất 500w | **1,550,000** | **1,370,000** |
+| **31 NT-L100** | Đèn lá năng lượng mặt trời - Solar Street Light NT-L100 | **1,400,000** | **1,200,000** |
+| **33 JD-L1000** | Đèn đường năng lượng mặt trời công suất 1000W | **1,970,000** | **1,720,000** |
+| **34 JD-L2000** | Đèn đường năng lượng mặt trời công suất 2000W | **2,420,000** | **2,220,000** |
+| **36 JD- 9400 (400w)** | Đèn đường năng lượng mặt trời JD-9400. Công suất 400W | **1,050,000** | **950,000** |
+| **JD- 3618** | NEW Đèn đường năng lượng mặt trời JD-3618 Công suất 300W | **820,000** | **750,000** |
+| **JD- 4624** | NEW Đèn đường năng lượng mặt trời JD-4624 Công suất 400W | **950,000** | **870,000** |
+| **JD- 5648** | NEW Đèn đường năng lượng mặt trời JD-5648 Công suất 500W | **1,050,000** | **970,000** |
+| **42 JD-Q1000** | Đèn đường năng lượng mặt trời JD-Q1000 | **1,250,000** | **1,150,000** |
+| **47 UFO500** | Đèn đường đĩa bay năng lượng mặt trời UFO 500 - Công Suất 250W | **1,100,000** | **1,000,000** |
+| **48 UFO500-V2** | Đèn đường đĩa bay năng lượng mặt trời UFO 500 - Công Suất 500W | **1,300,000** | **1,150,000** |
+| **49 UFO1000** | Đèn đĩa bay năng lượng mặt trời kim cương - mã UFO1000 | **1,600,000** | **1,450,000** |
+| **51 JD-6128** | Đèn UFO trong nhà, Đèn Phân Xưởng: 100w | **850,000** | **770,000** |
+| **53 NT-LB120** | Đèn Solar Bulb NT-LB120 (100W) | **800,000** | **720,000** |
+| **54 JD-X27** | Đèn sân vườn, đèn trụ cổng: JD-X27 | **550,000** | **500,000** |
+| **55 JD-X29** | Đèn sân vườn, đèn trụ cổng: JD-X27 | **670,000** | **600,000** |
+| **54 JD-X70** | Đèn sân vườn, đèn trụ cổng: JD-X75 | **550,000** | **500,000** |
+| **55 JD-X75** | Đèn sân vườn, đèn trụ cổng: JD-X75 | **670,000** | **600,000** |
+| **56 JD-DX88** | Đèn trụ cổng Con voi: JD-DX88 | **550,000** | **500,000** |
+| **54 JD-S80** | Đèn sân vườn, gắn tường JD-S80 | **420,000** | **380,000** |
+| **67 Cần đèn UFO 150.000 150.000 130.000** | 68 Cần đèn JD300, JD798 200.000 200.000 180.000 | **85,000** | **85,000** |
+| **59 Quạt treo tường** | QUẠT TREO TƯỜNG NLMT 16INCH | **1,550,000** | **1,450,000** |
+| **62 JD-T919** | Quạt Năng Lượng Mặt trời 12V | **1,650,000** | **1,550,000** |
+| **59 118F** | Quạt 118F Công suất: 15 w | **1,250,000** | **1,150,000** |
+| **65 T9** | Quạt Năng Lượng Mặt trời T9 | **1,150,000** | **1,050,000** |
+| **12 JD-Y70** | Pha cầm tay công suất 150W JD, Diện tích chiếu sáng 100m2 | **500,000** | **450,000** |
+| **13 JD-Y90** | Pha cầm ty công suất 200W JD, Diện tích chiếu sáng 150m2 | **550,000** | **500,000** |
+| **1 NT250C** | Đèn trụ cổng Kích thước sản phẩm: 250*250*300MM | **800,000** | **750,000** |
+| **2 NT250E** | Đèn trụ cổng Kích thước sản phẩm: 250*250*300MM | **800,000** | **750,000** |
+| **3 NT250D** | Đèn trụ cổng Kích thước sản phẩm: 250*250*300MM | **850,000** | **800,000** |
+| **4 NT300A** | Đèn trụ cổng Kích thước sản phẩm: 300*300*360MM | **850,000** | **800,000** |
+| **5 NT300B** | Đèn trụ cổng Kích thước sản phẩm: 300*300*360MM | **850,000** | **800,000** |
+| **6 NT300C** | Đèn trụ cổng Kích thước sản phẩm: 300*300*360MM | **1,000,000** | **950,000** |
+| **7 NT400A** | Đèn trụ cổng Kích thước sản phẩm: 400*400*410MM | **1,400,000** | **1,350,000** |
+| **8 NT400B** | Đèn trụ cổng Kích thước sản phẩm: 400*400*410MM | **1,300,000** | **1,250,000** |
+| **9 NT250A** | Đèn trụ cổng Kích thước sản phẩm: 250*190*470MM | **800,000** | **750,000** |
+| **10 NT250A PLUS** | Đèn trụ cổng Kích thước sản phẩm: 250*190*500MM | **800,000** | **750,000** |
+| **11 NTCP04** | Đèn Trang Trí Lối Đi Sân Vườn 3W | **1,000,000** | **950,000** |
+| **12 NTCP05** | Đèn Trang Trí Lối Đi Sân Vườn 4,5W | **1,120,000** | **1,050,000** |

@@ -1,0 +1,595 @@
+{
+    "bot_config": {
+        "name": "Solar Girl",
+        "role": "Đại sứ thương hiệu / Mascot của Solar 24h",
+        "personality": [
+            "Tận tâm",
+            "Thân thiện",
+            "Chuyên nghiệp",
+            "Năng động",
+            "Đáng tin cậy"
+        ],
+        "tone_of_voice": "Gần gũi, ấm áp, sử dụng ngôn từ dễ hiểu của người miền Tây Tiền Giang/Đồng Tháp. Nhấn mạnh bài toán tài chính 'Lấy tiền điện tự nuôi tiền góp'.",
+        "address": "Khu Phố Long Hòa A, Phường Đạo Thạnh, Tỉnh Tiền Giang (kế bên văn phòng hành chính công / vòng xoay Quảng trường Mỹ Tho)"
+    },
+    "electricity_tariffs_2026": {
+        "step_1": {
+            "min_kwh": 0,
+            "max_kwh": 50,
+            "price_per_kwh": 1984
+        },
+        "step_2": {
+            "min_kwh": 51,
+            "max_kwh": 100,
+            "price_per_kwh": 2050
+        },
+        "step_3": {
+            "min_kwh": 101,
+            "max_kwh": 200,
+            "price_per_kwh": 2380
+        },
+        "step_4": {
+            "min_kwh": 201,
+            "max_kwh": 300,
+            "price_per_kwh": 2998
+        },
+        "step_5": {
+            "min_kwh": 301,
+            "max_kwh": 400,
+            "price_per_kwh": 3350
+        },
+        "step_6": {
+            "min_kwh": 401,
+            "max_kwh": 999999,
+            "price_per_kwh": 3460
+        },
+        "prepaid_card_flat_rate": 2909
+    },
+    "solar_packages": [
+        {
+            "code": "SOLAR F1",
+            "capacity_kwp": 2.3,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 4
+            },
+            "inverter": {
+                "brand": "LUXPOWER SNA 5000W",
+                "warranty_years": 3
+            },
+            "battery": {
+                "brand": "BSB Lithium",
+                "capacity_kwh": 2.5,
+                "warranty_years": 3
+            },
+            "price_vnd": 47800000,
+            "recommended_monthly_bill_vnd": "Dưới 500.000đ"
+        },
+        {
+            "code": "SOLAR F2",
+            "capacity_kwp": 4.6,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 8
+            },
+            "inverter": {
+                "brand": "LUXPOWER SNA 5000W",
+                "warranty_years": 3
+            },
+            "battery": {
+                "brand": "BSB Lithium",
+                "capacity_kwh": 5.0,
+                "warranty_years": 5
+            },
+            "price_vnd": 68500000,
+            "recommended_monthly_bill_vnd": "Dưới 1.000.000đ"
+        },
+        {
+            "code": "SOLAR F3",
+            "capacity_kwp": 5.8,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 10
+            },
+            "inverter": {
+                "brand": "Inverter SVE 6kW",
+                "warranty_years": 5
+            },
+            "battery": {
+                "brand": "LS Battery Lithium",
+                "capacity_kwh": 10.0,
+                "warranty_years": 5
+            },
+            "price_vnd": 88000000,
+            "recommended_monthly_bill_vnd": "Từ 1.000.000đ đến 1.500.000đ"
+        },
+        {
+            "code": "SOLAR F4",
+            "capacity_kwp": 6.9,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 12
+            },
+            "inverter": {
+                "brand": "Inverter SVE 6kW",
+                "warranty_years": 5
+            },
+            "battery": {
+                "brand": "EJOR Lithium",
+                "capacity_kwh": 16.0,
+                "warranty_years": 5
+            },
+            "price_vnd": 104700000,
+            "recommended_monthly_bill_vnd": "Từ 1.500.000đ đến 2.000.000đ"
+        },
+        {
+            "code": "SOLAR F5",
+            "capacity_kwp": 8.1,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 14
+            },
+            "inverter": {
+                "brand": "LuxPower 6.5PRO",
+                "warranty_years": 6
+            },
+            "battery": {
+                "brand": "EJOR hoặc LS Lithium",
+                "capacity_kwh": 16.0,
+                "warranty_years": 5
+            },
+            "price_vnd": 114900000,
+            "recommended_monthly_bill_vnd": "Từ 2.000.000đ đến 2.500.000đ"
+        },
+        {
+            "code": "SOLAR F6",
+            "capacity_kwp": 9.3,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 16
+            },
+            "inverter": {
+                "brand": "LuxPower 6.5PRO",
+                "warranty_years": 6
+            },
+            "battery": {
+                "brand": "EJOR hoặc LS Lithium",
+                "capacity_kwh": 16.0,
+                "warranty_years": 5
+            },
+            "price_vnd": 123600000,
+            "recommended_monthly_bill_vnd": "Từ 2.500.000đ đến 3.000.000đ"
+        },
+        {
+            "code": "SOLAR F7",
+            "capacity_kwp": 11.6,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 20
+            },
+            "inverter": {
+                "brand": "2x LuxPower 6.5PRO",
+                "warranty_years": 6
+            },
+            "battery": {
+                "brand": "2x EJOR/LS Lithium (32 kWh)",
+                "warranty_years": 5
+            },
+            "price_vnd": 203000000,
+            "recommended_monthly_bill_vnd": "Từ 3.000.000đ đến 4.000.000đ"
+        },
+        {
+            "code": "SOLAR F8",
+            "capacity_kwp": 13.9,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 24
+            },
+            "inverter": {
+                "brand": "2x LuxPower 6.5PRO",
+                "warranty_years": 6
+            },
+            "battery": {
+                "brand": "2x EJOR/LS Lithium (32 kWh)",
+                "warranty_years": 5
+            },
+            "price_vnd": 217900000,
+            "recommended_monthly_bill_vnd": "Từ 4.000.000đ đến 5.000.000đ"
+        },
+        {
+            "code": "SOLAR F9",
+            "capacity_kwp": 17.4,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 30
+            },
+            "inverter": {
+                "brand": "2x LuxPower 6.5PRO",
+                "warranty_years": 6
+            },
+            "battery": {
+                "brand": "2x EJOR/LS Lithium (32 kWh)",
+                "warranty_years": 5
+            },
+            "price_vnd": 239000000,
+            "recommended_monthly_bill_vnd": "Từ 5.000.000đ đến 7.000.000đ"
+        },
+        {
+            "code": "SOLAR F10",
+            "capacity_kwp": 22.0,
+            "solar_panels": {
+                "brand": "AE Solar (Đức)",
+                "power_w": 580,
+                "quantity": 38
+            },
+            "inverter": {
+                "brand": "3x LuxPower 6.5PRO",
+                "warranty_years": 6
+            },
+            "battery": {
+                "brand": "3x EJOR/LS Lithium (48 kWh)",
+                "warranty_years": 5
+            },
+            "price_vnd": 329300000,
+            "recommended_monthly_bill_vnd": "Từ 7.000.000đ đến 10.000.000đ"
+        }
+    ],
+    "single_equipments": {
+        "panels": [
+            {
+                "brand": "AE Solar 580W (n-Type TOPCon)",
+                "price_vnd": 2850000,
+                "dimensions_mm": "2278x1134x35",
+                "weight_kg": 30.5
+            },
+            {
+                "brand": "AE Solar 630W (Double-Glass)",
+                "price_vnd": null,
+                "dimensions_mm": "2280x1134x35",
+                "weight_kg": null
+            },
+            {
+                "brand": "AE Solar 720W (Double-Glass)",
+                "price_vnd": 3250000,
+                "dimensions_mm": "2383x1302x30",
+                "weight_kg": 38.5
+            },
+            {
+                "brand": "TCL Solar 620W (n-Type TOPCon)",
+                "price_vnd": 2650000,
+                "dimensions_mm": "2382x1134x30",
+                "weight_kg": null
+            },
+            {
+                "brand": "TCL Solar 650W (n-Type TOPCon)",
+                "price_vnd": 2780000,
+                "dimensions_mm": "2382x1134x30",
+                "weight_kg": null
+            }
+        ],
+        "inverters_3phase": [
+            {
+                "model": "LuxPower 15kW (Trip-15K)",
+                "price_vnd": 54000000,
+                "warranty_years": 5
+            },
+            {
+                "model": "LuxPower 20kW (Trip-20K)",
+                "price_vnd": 58500000,
+                "warranty_years": 5
+            },
+            {
+                "model": "LuxPower 25kW (Trip-25K)",
+                "price_vnd": 62000000,
+                "warranty_years": 5
+            }
+        ]
+    },
+    "financial_program_shinhan_bank": {
+        "interest_rate_monthly": 0.0059,
+        "max_loan_amount_vnd": 100000000,
+        "required_documents": [
+            "CCCD gắn chip",
+            "Hóa đơn tiền điện sinh hoạt"
+        ],
+        "installment_table_100M_loan": {
+            "12_months": {
+                "monthly_payment_vnd": 8923333,
+                "note": "Gốc 8.33 triệu + Lãi 590k"
+            },
+            "24_months": {
+                "monthly_payment_vnd": 4756667,
+                "note": "Gốc 4.17 triệu + Lãi 590k"
+            },
+            "36_months": {
+                "monthly_payment_vnd": 3367778,
+                "note": "Gốc 2.78 triệu + Lãi 590k"
+            },
+            "48_months": {
+                "monthly_payment_vnd": 2673333,
+                "note": "Gốc 2.08 triệu + Lãi 590k"
+            }
+        }
+    },
+    "solar_lights_and_fans": [
+        {
+            "code": "và remote",
+            "name": "Bảo hành: 2 năm",
+            "retail_price_vnd": 620000,
+            "installation_price_vnd": 700000
+        },
+        {
+            "code": "đèn và remote",
+            "name": "Bảo hành: 2 năm",
+            "retail_price_vnd": 750000,
+            "installation_price_vnd": 820000
+        },
+        {
+            "code": "9 JD-18200",
+            "name": "Đèn pha led năng lượng mặt trời JD-18200, công suất 200W",
+            "retail_price_vnd": 900000,
+            "installation_price_vnd": 1050000
+        },
+        {
+            "code": "11 JD-18500",
+            "name": "Đèn pha led năng lượng mặt trời JD-18500, công suất 500w",
+            "retail_price_vnd": 1500000,
+            "installation_price_vnd": 1650000
+        },
+        {
+            "code": "21 JD-U300",
+            "name": "Đèn ốp trần năng lượng mặt trời - Solar celling Light JD - U300",
+            "retail_price_vnd": 550000,
+            "installation_price_vnd": 650000
+        },
+        {
+            "code": "22 JD-A320",
+            "name": "Đèn ốp trần năng lượng mặt trời - Solar celling Light JD - A320",
+            "retail_price_vnd": 690000,
+            "installation_price_vnd": 790000
+        },
+        {
+            "code": "25 JDE-6500",
+            "name": "Đèn đường năng lượng mặt trời JDE6500, công suất 500w",
+            "retail_price_vnd": 1370000,
+            "installation_price_vnd": 1550000
+        },
+        {
+            "code": "31 NT-L100",
+            "name": "Đèn lá năng lượng mặt trời - Solar Street Light NT-L100",
+            "retail_price_vnd": 1200000,
+            "installation_price_vnd": 1400000
+        },
+        {
+            "code": "33 JD-L1000",
+            "name": "Đèn đường năng lượng mặt trời công suất 1000W",
+            "retail_price_vnd": 1720000,
+            "installation_price_vnd": 1970000
+        },
+        {
+            "code": "34 JD-L2000",
+            "name": "Đèn đường năng lượng mặt trời công suất 2000W",
+            "retail_price_vnd": 2220000,
+            "installation_price_vnd": 2420000
+        },
+        {
+            "code": "36 JD- 9400 (400w)",
+            "name": "Đèn đường năng lượng mặt trời JD-9400. Công suất 400W",
+            "retail_price_vnd": 950000,
+            "installation_price_vnd": 1050000
+        },
+        {
+            "code": "JD- 3618",
+            "name": "NEW Đèn đường năng lượng mặt trời JD-3618 Công suất 300W",
+            "retail_price_vnd": 750000,
+            "installation_price_vnd": 820000
+        },
+        {
+            "code": "JD- 4624",
+            "name": "NEW Đèn đường năng lượng mặt trời JD-4624 Công suất 400W",
+            "retail_price_vnd": 870000,
+            "installation_price_vnd": 950000
+        },
+        {
+            "code": "JD- 5648",
+            "name": "NEW Đèn đường năng lượng mặt trời JD-5648 Công suất 500W",
+            "retail_price_vnd": 970000,
+            "installation_price_vnd": 1050000
+        },
+        {
+            "code": "42 JD-Q1000",
+            "name": "Đèn đường năng lượng mặt trời JD-Q1000",
+            "retail_price_vnd": 1150000,
+            "installation_price_vnd": 1250000
+        },
+        {
+            "code": "47 UFO500",
+            "name": "Đèn đường đĩa bay năng lượng mặt trời UFO 500 - Công Suất 250W",
+            "retail_price_vnd": 1000000,
+            "installation_price_vnd": 1100000
+        },
+        {
+            "code": "48 UFO500-V2",
+            "name": "Đèn đường đĩa bay năng lượng mặt trời UFO 500 - Công Suất 500W",
+            "retail_price_vnd": 1150000,
+            "installation_price_vnd": 1300000
+        },
+        {
+            "code": "49 UFO1000",
+            "name": "Đèn đĩa bay năng lượng mặt trời kim cương - mã UFO1000",
+            "retail_price_vnd": 1450000,
+            "installation_price_vnd": 1600000
+        },
+        {
+            "code": "51 JD-6128",
+            "name": "Đèn UFO trong nhà, Đèn Phân Xưởng: 100w",
+            "retail_price_vnd": 770000,
+            "installation_price_vnd": 850000
+        },
+        {
+            "code": "53 NT-LB120",
+            "name": "Đèn Solar Bulb NT-LB120 (100W)",
+            "retail_price_vnd": 720000,
+            "installation_price_vnd": 800000
+        },
+        {
+            "code": "54 JD-X27",
+            "name": "Đèn sân vườn, đèn trụ cổng: JD-X27",
+            "retail_price_vnd": 500000,
+            "installation_price_vnd": 550000
+        },
+        {
+            "code": "55 JD-X29",
+            "name": "Đèn sân vườn, đèn trụ cổng: JD-X27",
+            "retail_price_vnd": 600000,
+            "installation_price_vnd": 670000
+        },
+        {
+            "code": "54 JD-X70",
+            "name": "Đèn sân vườn, đèn trụ cổng: JD-X75",
+            "retail_price_vnd": 500000,
+            "installation_price_vnd": 550000
+        },
+        {
+            "code": "55 JD-X75",
+            "name": "Đèn sân vườn, đèn trụ cổng: JD-X75",
+            "retail_price_vnd": 600000,
+            "installation_price_vnd": 670000
+        },
+        {
+            "code": "56 JD-DX88",
+            "name": "Đèn trụ cổng Con voi: JD-DX88",
+            "retail_price_vnd": 500000,
+            "installation_price_vnd": 550000
+        },
+        {
+            "code": "54 JD-S80",
+            "name": "Đèn sân vườn, gắn tường JD-S80",
+            "retail_price_vnd": 380000,
+            "installation_price_vnd": 420000
+        },
+        {
+            "code": "67 Cần đèn UFO 150.000 150.000 130.000",
+            "name": "68 Cần đèn JD300, JD798 200.000 200.000 180.000",
+            "retail_price_vnd": 85000,
+            "installation_price_vnd": 85000
+        },
+        {
+            "code": "59 Quạt treo tường",
+            "name": "QUẠT TREO TƯỜNG NLMT 16INCH",
+            "retail_price_vnd": 1450000,
+            "installation_price_vnd": 1550000
+        },
+        {
+            "code": "62 JD-T919",
+            "name": "Quạt Năng Lượng Mặt trời 12V",
+            "retail_price_vnd": 1550000,
+            "installation_price_vnd": 1650000
+        },
+        {
+            "code": "59 118F",
+            "name": "Quạt 118F Công suất: 15 w",
+            "retail_price_vnd": 1150000,
+            "installation_price_vnd": 1250000
+        },
+        {
+            "code": "65 T9",
+            "name": "Quạt Năng Lượng Mặt trời T9",
+            "retail_price_vnd": 1050000,
+            "installation_price_vnd": 1150000
+        },
+        {
+            "code": "12 JD-Y70",
+            "name": "Pha cầm tay công suất 150W JD, Diện tích chiếu sáng 100m2",
+            "retail_price_vnd": 450000,
+            "installation_price_vnd": 500000
+        },
+        {
+            "code": "13 JD-Y90",
+            "name": "Pha cầm ty công suất 200W JD, Diện tích chiếu sáng 150m2",
+            "retail_price_vnd": 500000,
+            "installation_price_vnd": 550000
+        },
+        {
+            "code": "1 NT250C",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 250*250*300MM",
+            "retail_price_vnd": 750000,
+            "installation_price_vnd": 800000
+        },
+        {
+            "code": "2 NT250E",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 250*250*300MM",
+            "retail_price_vnd": 750000,
+            "installation_price_vnd": 800000
+        },
+        {
+            "code": "3 NT250D",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 250*250*300MM",
+            "retail_price_vnd": 800000,
+            "installation_price_vnd": 850000
+        },
+        {
+            "code": "4 NT300A",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 300*300*360MM",
+            "retail_price_vnd": 800000,
+            "installation_price_vnd": 850000
+        },
+        {
+            "code": "5 NT300B",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 300*300*360MM",
+            "retail_price_vnd": 800000,
+            "installation_price_vnd": 850000
+        },
+        {
+            "code": "6 NT300C",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 300*300*360MM",
+            "retail_price_vnd": 950000,
+            "installation_price_vnd": 1000000
+        },
+        {
+            "code": "7 NT400A",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 400*400*410MM",
+            "retail_price_vnd": 1350000,
+            "installation_price_vnd": 1400000
+        },
+        {
+            "code": "8 NT400B",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 400*400*410MM",
+            "retail_price_vnd": 1250000,
+            "installation_price_vnd": 1300000
+        },
+        {
+            "code": "9 NT250A",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 250*190*470MM",
+            "retail_price_vnd": 750000,
+            "installation_price_vnd": 800000
+        },
+        {
+            "code": "10 NT250A PLUS",
+            "name": "Đèn trụ cổng Kích thước sản phẩm: 250*190*500MM",
+            "retail_price_vnd": 750000,
+            "installation_price_vnd": 800000
+        },
+        {
+            "code": "11 NTCP04",
+            "name": "Đèn Trang Trí Lối Đi Sân Vườn 3W",
+            "retail_price_vnd": 950000,
+            "installation_price_vnd": 1000000
+        },
+        {
+            "code": "12 NTCP05",
+            "name": "Đèn Trang Trí Lối Đi Sân Vườn 4,5W",
+            "retail_price_vnd": 1050000,
+            "installation_price_vnd": 1120000
+        }
+    ]
+}
