@@ -13,7 +13,6 @@ from io import BytesIO
 from google.api_core import retry
 import asyncio
 import edge_tts
-from streamlit_mic_recorder import mic_recorder
 import base64
 
 # Tự động nạp cấu hình từ tệp .env (nếu có)
@@ -1365,22 +1364,7 @@ else:
     # Input từ người dùng với tính năng đính kèm ảnh
     prompt_text = None
     user_img_pil = None
-    is_voice = False
     
-    # Giao diện thu âm (Sử dụng mic_recorder và Gemini để dịch ra văn bản, vượt qua lỗi định dạng webm)
-    audio_rec = mic_recorder(start_prompt="🎤 Nhấn để thu âm", stop_prompt="⏹ Dừng thu âm", key="recorder")
-    if audio_rec:
-        with st.spinner("Đang nghe..."):
-            try:
-                # Dùng chính Gemini để dịch âm thanh (Gemini hỗ trợ đọc trực tiếp định dạng webm/mp3 từ mic_recorder)
-                stt_model = genai.GenerativeModel('gemini-3.5-flash')
-                audio_part = {"mime_type": "audio/webm", "data": audio_rec['bytes']}
-                stt_res = stt_model.generate_content(["Hãy chuyển đoạn âm thanh sau thành văn bản. Chỉ in ra đúng nội dung văn bản, không giải thích gì thêm.", audio_part])
-                prompt_text = stt_res.text.strip()
-                is_voice = True
-            except Exception as e:
-                st.error(f"Lỗi khi nghe: {e}")
-
     prompt_data = st.chat_input("Hỏi Solar Girl (VD: Gói F2 giá bao nhiêu?)", accept_file=True, file_type=["png", "jpg", "jpeg"])
     if prompt_data:
         prompt_text = prompt_data.text if hasattr(prompt_data, "text") else prompt_data["text"] if isinstance(prompt_data, dict) else prompt_data
@@ -1452,15 +1436,12 @@ else:
                         chat_history.append({"role": role, "parts": parts})
                         
                     # Chuẩn bị dữ liệu gửi đi (văn bản + ảnh nếu có)
-                    if is_voice:
-                        # Thêm lệnh ngầm để ép AI trả lời ngắn gọn nếu dùng giọng nói
-                        enhanced_prompt = prompt_text + "\n\n[SYSTEM: Khách đang dùng Voice Chat. Hãy trả lời cực kỳ NGẮN GỌN, SÚC TÍCH, giống như đang nói chuyện điện thoại (tối đa 2-3 câu). Không dùng danh sách dài hoặc định dạng phức tạp để tiết kiệm thời gian phản hồi âm thanh!]"
-                        current_parts = [enhanced_prompt]
+                    if user_img_pil:
+                        # Thêm lệnh ngầm để ép AI trả lời ngắn gọn khi có ảnh vì sẽ đọc bằng âm thanh
+                        enhanced_prompt = prompt_text + "\n\n[SYSTEM: Bạn đang xem ảnh của khách. Hãy tư vấn bằng văn xuôi cực kỳ NGẮN GỌN, SÚC TÍCH (tối đa 2-3 câu). Tránh dùng gạch đầu dòng, danh sách dài hay định dạng phức tạp vì câu trả lời này sẽ được chuyển thành giọng nói cho khách nghe!]"
+                        current_parts = [enhanced_prompt, user_img_pil]
                     else:
                         current_parts = [prompt_text]
-                        
-                    if user_img_pil:
-                        current_parts.append(user_img_pil)
                         
                     max_retries = len(st.session_state.get("api_keys_pool", [1]))
                     success = False
@@ -1508,9 +1489,8 @@ else:
                         message_placeholder.markdown(full_response)
                         st.session_state.messages.append({"role": "assistant", "content": full_response})
                         
-                        # Chỉ tạo file âm thanh nếu khách hàng dùng Micro (is_voice = True)
-                        # Để tránh quá tải khi AI trả lời các đoạn văn bản dài dòng.
-                        if is_voice:
+                        # Chỉ tạo file âm thanh nếu khách hàng upload ảnh (user_img_pil is not None)
+                        if user_img_pil:
                             clean_text = re.sub(r'[*#_~`]', '', full_response)
                             audio_bytes = generate_audio(clean_text)
                             if audio_bytes:
