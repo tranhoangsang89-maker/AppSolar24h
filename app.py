@@ -10,6 +10,7 @@ from datetime import datetime
 import json
 from docxtpl import DocxTemplate
 from io import BytesIO
+from google.api_core import retry
 
 # Tự động nạp cấu hình từ tệp .env (nếu có)
 def load_env():
@@ -24,9 +25,36 @@ def load_env():
 load_env()
 
 def setup_ai():
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    if api_key and api_key != "your_api_key_here":
-        genai.configure(api_key=api_key)
+    # Luôn quét lại các key từ os.environ (có thể cập nhật từ .env)
+    keys = []
+    default_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if default_key and default_key != "your_api_key_here":
+        keys.append(default_key)
+    for k, v in os.environ.items():
+        if k.startswith("GEMINI_API_KEY_") and v.strip() and v.strip() != "your_api_key_here":
+            keys.append(v.strip())
+            
+    # Lọc bỏ những key đã được đánh dấu là hết quota (dead_keys)
+    if "dead_keys" not in st.session_state:
+        st.session_state.dead_keys = set()
+    pool = [k for k in keys if k not in st.session_state.dead_keys]
+    
+    # Nếu tất cả các key đều dead, ta thử lại từ đầu và xoá danh sách dead_keys
+    if not pool and keys:
+        pool = keys
+        st.session_state.dead_keys.clear()
+            
+    # Sắp xếp để thứ tự ổn định (tùy chọn) và gán lại vào pool
+    pool = list(set(pool))
+    pool.sort()
+    st.session_state.api_keys_pool = pool
+    
+    if "current_key_index" not in st.session_state:
+        st.session_state.current_key_index = 0
+
+    if pool:
+        idx = st.session_state.current_key_index % len(pool)
+        genai.configure(api_key=pool[idx])
         return True
     return False
 
@@ -1371,7 +1399,6 @@ else:
                         
                     # Thiết lập model (Giữ nguyên gemini-flash-lite-latest, thêm công cụ và giảm nhiệt độ)
                     generation_config = genai.GenerationConfig(temperature=0.2)
-                    model = genai.GenerativeModel('gemini-flash-lite-latest', system_instruction=system_context, tools=[ai_calculate_installment], generation_config=generation_config)
                     
                     # Chuyển đổi lịch sử chat sang định dạng của genai
                     chat_history = []
@@ -1383,20 +1410,76 @@ else:
                             parts.append(m["image"])
                         chat_history.append({"role": role, "parts": parts})
                         
-                    chat = model.start_chat(history=chat_history, enable_automatic_function_calling=True)
-                    
                     # Chuẩn bị dữ liệu gửi đi (văn bản + ảnh nếu có)
                     current_parts = [prompt_text]
                     if user_img_pil:
                         current_parts.append(user_img_pil)
                         
-                    response = chat.send_message(current_parts)
+                    max_retries = len(st.session_state.get("api_keys_pool", [1]))
+                    success = False
+                    last_error = None
                     
-                    full_response = response.text
-                    message_placeholder.markdown(full_response)
-                    st.session_state.messages.append({"role": "assistant", "content": full_response})
+                    for attempt in range(max_retries):
+                        try:
+                            # Khởi tạo model và chat object bên trong vòng lặp để cập nhật key mới nếu có rotate
+                            # Sử dụng model mới nhất và ổn định nhất thay vì bản lite bị quá tải
+                            model = genai.GenerativeModel('gemini-3.5-flash', system_instruction=system_context, tools=[ai_calculate_installment], generation_config=generation_config)
+                            chat = model.start_chat(history=chat_history, enable_automatic_function_calling=True)
+                            
+                            # Cho phép SDK tự thử lại tối đa 8s nếu gặp lỗi mạng chập chờn, sau đó mới báo lỗi để code của ta xoay vòng key
+                            fast_fail_retry = retry.Retry(deadline=8)
+                            # Tăng timeout lên 35s vì mô hình đôi khi cần thời gian suy nghĩ/gọi hàm
+                            response = chat.send_message(current_parts, request_options={"retry": fast_fail_retry, "timeout": 35})
+                            success = True
+                            break
+                        except Exception as e:
+                            last_error = e
+                            error_msg = str(e).lower()
+                            
+                            # Nếu gặp lỗi Quota (429) HOẶC lỗi Server (504, 503, timeout) -> Đổi key và thử lại
+                            is_quota_error = any(kw in error_msg for kw in ["429", "quota", "exhausted"])
+                            is_server_error = any(kw in error_msg for kw in ["504", "503", "deadline", "timeout", "unavailable"])
+                            
+                            if is_quota_error or is_server_error:
+                                pool = st.session_state.get("api_keys_pool", [])
+                                
+                                # Đánh dấu vĩnh viễn dead_key để các lần hỏi sau không bị load lại gây chậm!
+                                if is_quota_error and pool:
+                                    dead_key = pool[st.session_state.current_key_index % len(pool)]
+                                    st.session_state.dead_keys.add(dead_key)
+                                
+                                if len(pool) > 1 and attempt < max_retries - 1:
+                                    # Xoay vòng key
+                                    st.session_state.current_key_index += 1
+                                    setup_ai()
+                                    continue
+                            # Lỗi khác hoặc hết lượt thử
+                            break
+
+                    if success:
+                        full_response = response.text
+                        message_placeholder.markdown(full_response)
+                        st.session_state.messages.append({"role": "assistant", "content": full_response})
+                    else:
+                        error_msg = str(last_error).lower()
+                        is_quota_error = any(kw in error_msg for kw in ["429", "quota", "exhausted"])
+                        is_server_error = any(kw in error_msg for kw in ["504", "503", "deadline", "timeout", "unavailable"])
+                        
+                        if is_quota_error:
+                            friendly_msg = "Dạ hiện tại em đang tiếp quá nhiều khách nên hệ thống bị quá tải. Anh/chị đợi em khoảng 1 phút rồi nhắn lại cho em nhé!"
+                        elif is_server_error:
+                            friendly_msg = "Dạ kết nối mạng đến máy chủ AI hiện tại hơi chậm, anh/chị vui lòng thử lại một lần nữa nhé!"
+                        else:
+                            friendly_msg = f"Đã xảy ra lỗi hệ thống: {str(last_error)}"
+                            
+                        if not friendly_msg.startswith("Đã xảy ra"):
+                            message_placeholder.markdown(friendly_msg)
+                            st.session_state.messages.append({"role": "assistant", "content": friendly_msg})
+                        else:
+                            st.error(friendly_msg)
                 except Exception as e:
-                    st.error(f"Đã xảy ra lỗi khi gọi AI: {str(e)}")
+                    st.error(f"Lỗi không xác định: {str(e)}")
+
 
 st.write("---")
 
