@@ -4,3 +4,7 @@ pandas>=2.0.0
 google-generativeai>=0.4.0
 google-api-core>=2.10.0
 docxtpl>=0.17.0
+edge-tts>=0.14.3
+SpeechRecognition>=3.10.0
+streamlit-mic-recorder>=0.0.3
+pydub>=0.25.1
