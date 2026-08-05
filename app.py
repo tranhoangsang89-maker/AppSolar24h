@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from PIL import Image
 import math
+import time
 import requests
 import google.generativeai as genai
 import re
@@ -81,6 +82,7 @@ def generate_audio(text):
         print(f"TTS Error: {repr(e)}")
         return None
 
+@st.cache_data
 def load_ai_knowledge_base():
     kb_path = "solar_24h_ai_knowledge_base.md"
     if os.path.exists(kb_path):
@@ -1427,9 +1429,9 @@ else:
                     
                     # Chuyển đổi lịch sử chat sang định dạng của genai
                     chat_history = []
-                    for m in st.session_state.messages[:-1]: # Loại bỏ câu user cuối cùng vì sẽ dùng làm prompt
+                    # Bỏ qua tin nhắn đầu tiên (lời chào) vì API yêu cầu history bắt đầu bằng tin nhắn của user
+                    for m in st.session_state.messages[1:-1]: # Loại bỏ câu user cuối cùng vì sẽ dùng làm prompt
                         role = "user" if m["role"] == "user" else "model"
-                        # Bỏ qua tin nhắn đầu tiên (lời chào) nếu API không nhận diện tốt
                         parts = [m["content"]]
                         if "image" in m and m["image"] is not None:
                             parts.append(m["image"])
@@ -1450,14 +1452,15 @@ else:
                     for attempt in range(max_retries):
                         try:
                             # Khởi tạo model và chat object bên trong vòng lặp để cập nhật key mới nếu có rotate
-                            # Sử dụng model mới nhất và ổn định nhất thay vì bản lite bị quá tải
-                            model = genai.GenerativeModel('gemini-3.5-flash', system_instruction=system_context, tools=[ai_calculate_installment], generation_config=generation_config)
+                            # Sử dụng bản lite để đảm bảo tốc độ phản hồi nhanh nhất
+                            model = genai.GenerativeModel('gemini-flash-lite-latest', system_instruction=system_context, tools=[ai_calculate_installment], generation_config=generation_config)
                             chat = model.start_chat(history=chat_history, enable_automatic_function_calling=True)
                             
                             # Cho phép SDK tự thử lại tối đa 8s nếu gặp lỗi mạng chập chờn, sau đó mới báo lỗi để code của ta xoay vòng key
-                            fast_fail_retry = retry.Retry(deadline=8)
-                            # Tăng timeout lên 35s vì mô hình đôi khi cần thời gian suy nghĩ/gọi hàm
-                            response = chat.send_message(current_parts, request_options={"retry": fast_fail_retry, "timeout": 35})
+                            fast_fail_retry = retry.Retry(deadline=15)
+                            # Không thể bật stream=True cùng với enable_automatic_function_calling=True theo giới hạn của SDK
+                            with st.spinner("Solar Girl đang suy nghĩ..."):
+                                response = chat.send_message(current_parts, request_options={"retry": fast_fail_retry, "timeout": 35})
                             success = True
                             break
                         except Exception as e:
@@ -1486,8 +1489,14 @@ else:
 
                     if success:
                         full_response = response.text
-                        message_placeholder.markdown(full_response)
                         st.session_state.messages.append({"role": "assistant", "content": full_response})
+                        
+                        def stream_text(text):
+                            for word in text.split(" "):
+                                yield word + " "
+                                time.sleep(0.04)
+                        
+                        message_placeholder.write_stream(stream_text(full_response))
                         
                         # Chỉ tạo file âm thanh nếu khách hàng upload ảnh (user_img_pil is not None)
                         if user_img_pil:
